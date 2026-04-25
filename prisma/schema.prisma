@@ -1,0 +1,15 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["nativeDistinct", "relationJoins"]
+  engineType      = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["public"]
+}
+
+/// This schema is intentionally empty as the neutral starting point for the
+/// upcoming Gebrauchtwagen aggregate. The domain models will be introduced
+/// after the DB backend assets are brought over from the FastAPI project.
