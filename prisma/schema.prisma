@@ -7,9 +7,9 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["public"]
+  schemas  = ["gebrauchtwagen"]
 }
 
 /// This schema is intentionally empty as the neutral starting point for the
 /// upcoming Gebrauchtwagen aggregate. The domain models will be introduced
-/// after the DB backend assets are brought over from the FastAPI project.
+/// from the PostgreSQL schema via `prisma db pull`.
