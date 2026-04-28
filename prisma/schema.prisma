@@ -10,6 +10,99 @@ datasource db {
   schemas  = ["gebrauchtwagen"]
 }
 
-/// This schema is intentionally empty as the neutral starting point for the
-/// upcoming Gebrauchtwagen aggregate. The domain models will be introduced
-/// from the PostgreSQL schema via `prisma db pull`.
+model Gebrauchtwagen {
+  id                Int                @id @default(autoincrement())
+  fin               String             @unique @db.VarChar(17)
+  marke             String             @db.VarChar(100)
+  modell            String             @db.VarChar(100)
+  baujahr           Int
+  kilometerstand    Int
+  kraftstoffart     Kraftstoffart
+  fahrzeugklasse    Fahrzeugklasse
+  erstzulassung     DateTime           @db.Date
+  schadenfrei       Boolean
+  ausstattung       Json
+  beschreibungUrl   String?            @map("beschreibung_url") @db.VarChar(255)
+  anbieterUsername  String?            @map("anbieter_username") @db.VarChar(100)
+  kontaktEmail      String?            @map("kontakt_email") @db.VarChar(255)
+  erzeugt           DateTime           @default(now()) @db.Timestamp(6)
+  aktualisiert      DateTime           @default(now()) @updatedAt @db.Timestamp(6)
+  version           Int
+  hauptuntersuchung Hauptuntersuchung?
+  schaeden          Schaden[]
+  standort          Standort?
+
+  @@map("gebrauchtwagen")
+  @@schema("gebrauchtwagen")
+}
+
+model Hauptuntersuchung {
+  id                Int            @id @default(autoincrement())
+  gebrauchtwagenId  Int            @unique @map("gebrauchtwagen_id")
+  pruefdatum        DateTime       @db.Date
+  gueltigBis        DateTime       @map("gueltig_bis") @db.Date
+  prueforganisation String         @db.VarChar(100)
+  status            HuStatus
+  gebrauchtwagen    Gebrauchtwagen @relation(fields: [gebrauchtwagenId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("hauptuntersuchung")
+  @@schema("gebrauchtwagen")
+}
+
+model Schaden {
+  id                 Int            @id @default(autoincrement())
+  gebrauchtwagenId   Int            @map("gebrauchtwagen_id")
+  bezeichnung        String         @db.VarChar(100)
+  beschreibung       String         @db.VarChar(500)
+  feststellungsdatum DateTime       @db.Date
+  gebrauchtwagen     Gebrauchtwagen @relation(fields: [gebrauchtwagenId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("schaden")
+  @@schema("gebrauchtwagen")
+}
+
+model Standort {
+  id                Int            @id @default(autoincrement())
+  gebrauchtwagenId  Int            @unique @map("gebrauchtwagen_id")
+  plz               String         @db.VarChar(10)
+  ort               String         @db.VarChar(100)
+  gebrauchtwagen    Gebrauchtwagen @relation(fields: [gebrauchtwagenId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("standort")
+  @@schema("gebrauchtwagen")
+}
+
+enum Fahrzeugklasse {
+  KLEINWAGEN
+  KOMPAKTKLASSE
+  MITTELKLASSE
+  OBERKLASSE
+  SUV
+  KOMBI
+  CABRIO
+  TRANSPORTER
+
+  @@map("fahrzeugklasse")
+  @@schema("gebrauchtwagen")
+}
+
+enum HuStatus {
+  BESTANDEN
+  NICHT_BESTANDEN
+  AUSSTEHEND
+
+  @@map("hu_status")
+  @@schema("gebrauchtwagen")
+}
+
+enum Kraftstoffart {
+  BENZIN
+  DIESEL
+  ELEKTRO
+  HYBRID
+  ERDGAS
+  WASSERSTOFF
+
+  @@map("kraftstoffart")
+  @@schema("gebrauchtwagen")
+}
