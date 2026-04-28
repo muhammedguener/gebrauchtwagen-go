@@ -10,6 +10,7 @@ services:
       POSTGRES_PASSWORD: gebrauchtwagen
     volumes:
       - ./init:/init:ro
+      - ./init:/docker-entrypoint-initdb.d:ro
     ports:
       - "5432:5432"
     healthcheck:

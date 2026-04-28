@@ -56,3 +56,24 @@ COPY hauptuntersuchung (
 )
 FROM '/init/gebrauchtwagen/csv/hauptuntersuchung.csv'
 (FORMAT csv, HEADER true, DELIMITER ';');
+
+SELECT setval(
+    pg_get_serial_sequence('gebrauchtwagen.gebrauchtwagen', 'id'),
+    (SELECT max(id) FROM gebrauchtwagen),
+    true
+);
+SELECT setval(
+    pg_get_serial_sequence('standort', 'id'),
+    (SELECT max(id) FROM standort),
+    true
+);
+SELECT setval(
+    pg_get_serial_sequence('schaden', 'id'),
+    (SELECT max(id) FROM schaden),
+    true
+);
+SELECT setval(
+    pg_get_serial_sequence('hauptuntersuchung', 'id'),
+    (SELECT max(id) FROM hauptuntersuchung),
+    true
+);
