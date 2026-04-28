@@ -13,6 +13,8 @@
   "author": "Juergen Zimmermann <Juergen.Zimmermann@h-ka.de> (https://www.h-ka.de)",
   "type": "module",
   "scripts": {
+    "build": "bun build --compile --sourcemap ./src/beispiele.mts",
+    "build:write": "bun build --compile --sourcemap ./src/beispiele-write.mts",
     "eslint": "eslint --concurrency auto src package.json prisma.config.ts",
     "prettier": "prettier -w \"*.{json,md}\" \"src/**/*.mts\" \"prisma/**/*.prisma\""
   },

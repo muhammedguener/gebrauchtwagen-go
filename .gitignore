@@ -83,3 +83,7 @@ coverage
 /generated/prisma
 
 /src/generated/prisma
+
+# Bun-Executables durch `bun run build*`
+/beispiele*.exe
+/beispiele*.js.map
