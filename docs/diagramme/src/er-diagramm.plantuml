@@ -1,0 +1,118 @@
+' ER-Diagramm fuer die Gebrauchtwagen-Domaene.
+'
+' Preview in VS Code mit PlantUML-Erweiterung: <Alt>d
+
+@startuml ER Diagramm
+
+hide circle
+skinparam linetype ortho
+skinparam entity {
+  BackgroundColor #ffffff
+  BorderColor #333333
+}
+
+entity "gebrauchtwagen.gebrauchtwagen" as Gebrauchtwagen {
+  * id : integer <<generated>>
+  --
+  * version : integer
+  * fin : varchar(17) <<unique>>
+  * marke : varchar(100)
+  * modell : varchar(100)
+  * baujahr : integer
+  * erstzulassung : date
+  * kilometerstand : integer
+  * kraftstoffart : kraftstoffart
+  * fahrzeugklasse : fahrzeugklasse
+  * ausstattung : JSONB
+  * schadenfrei : boolean
+    beschreibung_url : varchar(255)
+    anbieter_username : varchar(100)
+    kontakt_email : varchar(255)
+  * erzeugt : timestamp
+  * aktualisiert : timestamp
+}
+
+entity "gebrauchtwagen.standort" as Standort {
+  * id : integer <<generated>>
+  --
+  * plz : varchar(10)
+  * ort : varchar(100)
+  * gebrauchtwagen_id : integer <<FK, unique>>
+}
+
+entity "gebrauchtwagen.schaden" as Schaden {
+  * id : integer <<generated>>
+  --
+  * bezeichnung : varchar(100)
+  * beschreibung : varchar(500)
+  * feststellungsdatum : date
+  * gebrauchtwagen_id : integer <<FK>>
+}
+
+entity "gebrauchtwagen.hauptuntersuchung" as Hauptuntersuchung {
+  * id : integer <<generated>>
+  --
+  * pruefdatum : date
+  * gueltig_bis : date
+  * prueforganisation : varchar(100)
+  * status : hu_status
+  * gebrauchtwagen_id : integer <<FK, unique>>
+}
+
+enum "gebrauchtwagen.kraftstoffart" as Kraftstoffart {
+  BENZIN
+  DIESEL
+  ELEKTRO
+  HYBRID
+  ERDGAS
+  WASSERSTOFF
+}
+
+enum "gebrauchtwagen.fahrzeugklasse" as Fahrzeugklasse {
+  KLEINWAGEN
+  KOMPAKTKLASSE
+  MITTELKLASSE
+  OBERKLASSE
+  SUV
+  KOMBI
+  CABRIO
+  TRANSPORTER
+}
+
+enum "gebrauchtwagen.hu_status" as HuStatus {
+  BESTANDEN
+  NICHT_BESTANDEN
+  AUSSTEHEND
+}
+
+Gebrauchtwagen ||--|| Standort : "hat genau einen"
+Gebrauchtwagen ||--o{ Schaden : "hat null bis viele"
+Gebrauchtwagen ||--|| Hauptuntersuchung : "hat genau eine"
+
+Gebrauchtwagen }o..|| Kraftstoffart : "verwendet"
+Gebrauchtwagen }o..|| Fahrzeugklasse : "verwendet"
+Hauptuntersuchung }o..|| HuStatus : "verwendet"
+
+note right of Gebrauchtwagen
+  version wird im Prisma-Beispiel
+  fuer optimistische Synchronisation
+  inkrementiert.
+
+  anbieter_username und kontakt_email
+  ergaenzen das Zielmodell fuer spaetere
+  objektbezogene Zugriffskontrolle.
+end note
+
+note bottom of Standort
+  gebrauchtwagen_id ist unique:
+  ein Fahrzeug hat genau einen Standort.
+end note
+
+note bottom of Hauptuntersuchung
+  gebrauchtwagen_id ist unique:
+  ein Fahrzeug hat genau eine aktuelle HU.
+end note
+
+footer Gebrauchtwagen
+
+@enduml
