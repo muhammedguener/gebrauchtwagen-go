@@ -56,6 +56,7 @@ bun run prisma:generate
 
 Beim ersten Initialisieren des PostgreSQL-Containers werden Schema und CSV-Daten
 automatisch geladen. Wenn der Container schon vorher existierte, kann die
+
 Demo-Datenbank mit folgendem Befehl neu aufgebaut werden:
 
 ```powershell
@@ -82,6 +83,16 @@ Filterbedingungen, Relationen, Mapping und Pagination:
 ```powershell
 bun --env-file=.env src/beispiele.mts
 ```
+
+Fuer Ticket 5 sind dort folgende Punkte enthalten:
+
+- Filter nach `marke` und `modell`
+- kombinierte Filter fuer `fahrzeugklasse`, `kraftstoffart`, `schadenfrei`
+- reproduzierbare Pagination mit `page` und `size`
+- Validierung ungueltiger Filterwerte
+
+Die zentrale Hilfsfunktion fuer Prisma-Filter/Pagination liegt in
+`src/gebrauchtwagen-query.mts`.
 
 Die Beispiel-Datei `src\beispiele-write.mts` zeigt schreibende Prisma-Zugriffe
 mit `create`, `update`, `delete`, verschachtelten Relationen und Transaktion:
