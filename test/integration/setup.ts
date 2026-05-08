@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server';
-import { afterAll, beforeAll } from 'vitest';
+import { afterAll, beforeAll, beforeEach } from 'vitest';
 import { createApp } from '../../src/app.mts';
+import { resetGebrauchtwagenFixtures } from '../../src/data/gebrauchtwagen-fixtures.mts';
 
 type MinimalServer = {
     close: () => void;
@@ -15,6 +16,10 @@ beforeAll(() => {
     process.env['TEST_BASE_URL'] = baseUrl;
     const app = createApp();
     server = serve({ fetch: app.fetch, port }) as MinimalServer;
+});
+
+beforeEach(() => {
+    resetGebrauchtwagenFixtures();
 });
 
 afterAll(() => {

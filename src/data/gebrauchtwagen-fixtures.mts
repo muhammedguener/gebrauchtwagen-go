@@ -10,7 +10,7 @@ export type GebrauchtwagenDto = {
     kilometerstand: number;
 };
 
-export const gebrauchtwagenFixtures: GebrauchtwagenDto[] = [
+const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
     {
         id: 1,
         marke: 'VW',
@@ -66,3 +66,55 @@ export const gebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         kilometerstand: 91200,
     },
 ];
+
+let gebrauchtwagenFixturesState = initialGebrauchtwagenFixtures.map((fahrzeug) => ({
+    ...fahrzeug,
+}));
+
+export const listGebrauchtwagenFixtures = (): GebrauchtwagenDto[] =>
+    gebrauchtwagenFixturesState.map((fahrzeug) => ({ ...fahrzeug }));
+
+export const findGebrauchtwagenFixtureById = (
+    id: number,
+): GebrauchtwagenDto | undefined => {
+    const fahrzeug = gebrauchtwagenFixturesState.find((item) => item.id === id);
+    return fahrzeug === undefined ? undefined : { ...fahrzeug };
+};
+
+export const createGebrauchtwagenFixture = (
+    fahrzeug: Omit<GebrauchtwagenDto, 'id'>,
+): GebrauchtwagenDto => {
+    const nextId = Math.max(...gebrauchtwagenFixturesState.map((item) => item.id), 0) + 1;
+    const created: GebrauchtwagenDto = { id: nextId, ...fahrzeug };
+    gebrauchtwagenFixturesState.push(created);
+
+    return { ...created };
+};
+
+export const updateGebrauchtwagenFixture = (
+    id: number,
+    fahrzeug: Omit<GebrauchtwagenDto, 'id'>,
+): GebrauchtwagenDto | undefined => {
+    const index = gebrauchtwagenFixturesState.findIndex((item) => item.id === id);
+    if (index < 0) {
+        return undefined;
+    }
+
+    const updated: GebrauchtwagenDto = { id, ...fahrzeug };
+    gebrauchtwagenFixturesState[index] = updated;
+
+    return { ...updated };
+};
+
+export const deleteGebrauchtwagenFixture = (id: number): boolean => {
+    const initialLength = gebrauchtwagenFixturesState.length;
+    gebrauchtwagenFixturesState = gebrauchtwagenFixturesState.filter((item) => item.id !== id);
+
+    return gebrauchtwagenFixturesState.length !== initialLength;
+};
+
+export const resetGebrauchtwagenFixtures = (): void => {
+    gebrauchtwagenFixturesState = initialGebrauchtwagenFixtures.map((fahrzeug) => ({
+        ...fahrzeug,
+    }));
+};
