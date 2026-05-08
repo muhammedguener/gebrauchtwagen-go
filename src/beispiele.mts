@@ -20,6 +20,7 @@
 
 import process from 'node:process';
 import { styleText } from 'node:util';
+import { ZodError } from 'zod';
 import {
     type Gebrauchtwagen,
     type Prisma,
@@ -28,6 +29,10 @@ import {
     createPrismaClient,
     registerPrismaQueryLogger,
 } from './config/prisma-client.mts';
+import {
+    buildFindManyArgs,
+    parseGebrauchtwagenSearchParams,
+} from './gebrauchtwagen-query.mts';
 
 let message = styleText(['black', 'bgWhite'], 'Node version');
 console.log(`${message}=${process.version}`);
@@ -38,80 +43,115 @@ console.log();
 const prisma = createPrismaClient();
 registerPrismaQueryLogger(prisma);
 
-export type GebrauchtwagenMitDetails = Prisma.GebrauchtwagenGetPayload<{
-    include: {
-        hauptuntersuchung: true;
-        schaeden: true;
-        standort: true;
-    };
-}>;
+const printResult = (label: string, value: unknown): void => {
+    const printLabel = styleText(['black', 'bgWhite'], label);
+    console.log(`${printLabel} = %j`, value);
+    console.log();
+};
+
+const printValidationError = (error: ZodError): void => {
+    const printLabel = styleText(['black', 'bgWhite'], 'Validierungsfehler');
+    const details = error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+    }));
+
+    console.log(`${printLabel} = %j`, details);
+    console.log();
+};
 
 try {
     await prisma.$connect();
 
-    const gebrauchtwagen: Gebrauchtwagen | null =
+    const gebrauchtwagenById: Gebrauchtwagen | null =
         await prisma.gebrauchtwagen.findUnique({
             where: { id: 1 },
         });
-    message = styleText(['black', 'bgWhite'], 'gebrauchtwagen');
-    console.log(`${message} = %j`, gebrauchtwagen);
-    console.log();
+    printResult('gebrauchtwagenById', gebrauchtwagenById);
 
-    const fahrzeugeInKarlsruhe: GebrauchtwagenMitDetails[] =
+    const byMarkeUndModell =
         await prisma.gebrauchtwagen.findMany({
-            where: {
-                standort: {
-                    ort: {
-                        contains: 'Karlsruhe',
-                    },
-                },
-            },
-            include: {
-                hauptuntersuchung: true,
-                schaeden: true,
-                standort: true,
-            },
+            ...buildFindManyArgs(
+                parseGebrauchtwagenSearchParams({
+                    marke: 'VW',
+                    modell: 'golf',
+                    page: 1,
+                    size: 10,
+                }),
+            ),
         });
-    message = styleText(['black', 'bgWhite'], 'fahrzeugeInKarlsruhe');
-    console.log(`${message} = %j`, fahrzeugeInKarlsruhe);
-    console.log();
+    printResult('byMarkeUndModell', byMarkeUndModell);
 
-    const marken = fahrzeugeInKarlsruhe.map((fahrzeug) => fahrzeug.marke);
-    message = styleText(['black', 'bgWhite'], 'marken');
-    console.log(`${message} = %j`, marken);
-    console.log();
-
-    const standorte = fahrzeugeInKarlsruhe.map(
-        (fahrzeug) => fahrzeug.standort?.ort,
-    );
-    message = styleText(['black', 'bgWhite'], 'standorte');
-    console.log(`${message} = %j`, standorte);
-    console.log();
-
-    const kompakteFahrzeuge: Gebrauchtwagen[] =
+    const byFahrzeugklasseUndKraftstoff =
         await prisma.gebrauchtwagen.findMany({
-            where: {
-                fahrzeugklasse: 'KOMPAKTKLASSE',
-                kilometerstand: {
-                    lte: 50_000,
-                },
-            },
-            orderBy: {
-                kilometerstand: 'asc',
-            },
+            ...buildFindManyArgs(
+                parseGebrauchtwagenSearchParams({
+                    fahrzeugklasse: 'KOMPAKTKLASSE',
+                    kraftstoffart: 'BENZIN',
+                    page: 1,
+                    size: 10,
+                }),
+            ),
         });
-    message = styleText(['black', 'bgWhite'], 'kompakteFahrzeuge');
-    console.log(`${message} = %j`, kompakteFahrzeuge);
-    console.log();
+    printResult('byFahrzeugklasseUndKraftstoff', byFahrzeugklasseUndKraftstoff);
 
-    const fahrzeugePage2: Gebrauchtwagen[] =
+    const bySchadenfrei = await prisma.gebrauchtwagen.findMany({
+        ...buildFindManyArgs(
+            parseGebrauchtwagenSearchParams({
+                schadenfrei: true,
+                page: 1,
+                size: 10,
+            }),
+        ),
+    });
+    printResult('bySchadenfrei', bySchadenfrei);
+
+    const kombiniert =
         await prisma.gebrauchtwagen.findMany({
-            skip: 5,
-            take: 5,
+            ...buildFindManyArgs(
+                parseGebrauchtwagenSearchParams({
+                    marke: 'V',
+                    fahrzeugklasse: 'KOMPAKTKLASSE',
+                    schadenfrei: false,
+                    page: 1,
+                    size: 10,
+                }),
+            ),
         });
-    message = styleText(['black', 'bgWhite'], 'fahrzeugePage2');
-    console.log(`${message} = %j`, fahrzeugePage2);
-    console.log();
+    printResult('kombiniert', kombiniert);
+
+    const page1: Gebrauchtwagen[] =
+        await prisma.gebrauchtwagen.findMany({
+            ...buildFindManyArgs(
+                parseGebrauchtwagenSearchParams({
+                    page: 1,
+                    size: 3,
+                }),
+            ),
+        });
+    const page2: Gebrauchtwagen[] =
+        await prisma.gebrauchtwagen.findMany({
+            ...buildFindManyArgs(
+                parseGebrauchtwagenSearchParams({
+                    page: 2,
+                    size: 3,
+                }),
+            ),
+        });
+    printResult('page1', page1.map((fahrzeug) => fahrzeug.id));
+    printResult('page2', page2.map((fahrzeug) => fahrzeug.id));
+
+    try {
+        parseGebrauchtwagenSearchParams({
+            kraftstoffart: 'STROM',
+        });
+    } catch (error: unknown) {
+        if (error instanceof ZodError) {
+            printValidationError(error);
+        } else {
+            throw error;
+        }
+    }
 } finally {
     await prisma.$disconnect();
 }
