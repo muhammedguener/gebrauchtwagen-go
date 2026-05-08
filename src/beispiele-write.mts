@@ -18,10 +18,13 @@
 //
 //           bun --env-file=.env src\beispiele-write.mts
 
-import { PrismaPg } from '@prisma/adapter-pg';
 import process from 'node:process';
 import { styleText } from 'node:util';
-import { PrismaClient, type Prisma } from './generated/prisma/client.ts';
+import { type Prisma } from './generated/prisma/client.ts';
+import {
+    createPrismaClient,
+    registerPrismaQueryLogger,
+} from './config/prisma-client.mts';
 
 let message = styleText(
     'yellow',
@@ -30,31 +33,8 @@ let message = styleText(
 console.log(message);
 console.log();
 
-const adapter = new PrismaPg({
-    connectionString: process.env['DATABASE_URL'],
-});
-
-const log: (Prisma.LogLevel | Prisma.LogDefinition)[] = [
-    {
-        emit: 'event',
-        level: 'query',
-    },
-    'info',
-    'warn',
-    'error',
-];
-
-const prisma = new PrismaClient({
-    adapter,
-    errorFormat: 'pretty',
-    log,
-});
-prisma.$on('query', (e) => {
-    message = styleText('green', `Query: ${e.query}`);
-    console.log(message);
-    message = styleText('cyan', `Duration: ${e.duration} ms`);
-    console.log(message);
-});
+const prisma = createPrismaClient();
+registerPrismaQueryLogger(prisma);
 
 const neuerGebrauchtwagen: Prisma.GebrauchtwagenCreateInput = {
     fin: 'WVWZZZCDZRW900099',

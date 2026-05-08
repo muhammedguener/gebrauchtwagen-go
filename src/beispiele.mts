@@ -20,13 +20,14 @@
 
 import process from 'node:process';
 import { styleText } from 'node:util';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { prismaQueryInsights } from '@prisma/sqlcommenter-query-insights';
 import {
-    PrismaClient,
     type Gebrauchtwagen,
     type Prisma,
 } from './generated/prisma/client.ts';
+import {
+    createPrismaClient,
+    registerPrismaQueryLogger,
+} from './config/prisma-client.mts';
 
 let message = styleText(['black', 'bgWhite'], 'Node version');
 console.log(`${message}=${process.version}`);
@@ -34,32 +35,8 @@ message = styleText(['black', 'bgWhite'], 'DATABASE_URL');
 console.log(`${message}=${process.env['DATABASE_URL']}`);
 console.log();
 
-const adapter = new PrismaPg({
-    connectionString: process.env['DATABASE_URL'],
-});
-
-const log: (Prisma.LogLevel | Prisma.LogDefinition)[] = [
-    {
-        emit: 'event',
-        level: 'query',
-    },
-    'info',
-    'warn',
-    'error',
-];
-
-const prisma = new PrismaClient({
-    adapter,
-    errorFormat: 'pretty',
-    log,
-    comments: [prismaQueryInsights()],
-});
-prisma.$on('query', (e) => {
-    message = styleText('green', `Query: ${e.query}`);
-    console.log(message);
-    message = styleText('cyan', `Duration: ${e.duration} ms`);
-    console.log(message);
-});
+const prisma = createPrismaClient();
+registerPrismaQueryLogger(prisma);
 
 export type GebrauchtwagenMitDetails = Prisma.GebrauchtwagenGetPayload<{
     include: {
