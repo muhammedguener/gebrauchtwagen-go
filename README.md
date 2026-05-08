@@ -51,7 +51,7 @@ Danach kann das Prisma-Schema aus der bestehenden Datenbank erzeugt werden:
 
 ```powershell
 bun --env-file=.env prisma db pull
-bun --env-file=.env prisma generate
+bun run prisma:generate
 ```
 
 Beim ersten Initialisieren des PostgreSQL-Containers werden Schema und CSV-Daten
@@ -64,6 +64,17 @@ docker compose -f extras\compose\postgres\compose.yml up -d db
 ```
 
 ## Aufruf der Beispiele
+
+Die zentrale Prisma-Factory fuer die App liegt in
+`src/config/prisma-client.mts`.
+Sie kapselt Adapter, Logging und den Zugriff auf `DATABASE_URL`.
+
+Ein einfacher Verbindungscheck gegen die Compose-DB erfolgt ueber die
+Beispielskripte:
+
+```powershell
+bun --env-file=.env src/beispiele.mts
+```
 
 Die Beispiel-Datei `src\beispiele.mts` zeigt lesende Prisma-Zugriffe mit
 Filterbedingungen, Relationen, Mapping und Pagination:
