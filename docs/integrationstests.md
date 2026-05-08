@@ -17,6 +17,13 @@ bun x vitest --run
 - GraphQL ist fuer spaetere Tests unter `test/integration/graphql` vorbereitet
 - Gemeinsames Setup fuer Basis-URL und lokalen Server liegt in `test/integration/setup.ts`
 
+## Abgedeckte Faelle in Ticket 6
+
+- REST-Lesezugriffe fuer Liste und Detail
+- REST-Schreibzugriffe fuer `POST`, `PUT` und `DELETE`
+- Erfolgs- und Fehlerfaelle (`200`, `201`, `204`, `400`, `401`, `403`, `404`)
+- Auth-Basistests fuer fehlenden Bearer-Token und fehlende Admin-Rolle
+
 ## Technische Einordnung
 
 Die Integrationstests nutzen die Fetch API gegen eine lokal gestartete Hono-App.
