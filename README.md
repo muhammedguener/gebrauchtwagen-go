@@ -101,23 +101,6 @@ mit `create`, `update`, `delete`, verschachtelten Relationen und Transaktion:
 bun --env-file=.env src/beispiele-write.mts
 ```
 
-## Vitest-Integrationstests (Ticket 6)
-
-Die Integrationstests nutzen die Fetch API gegen eine lokal gestartete Hono-App.
-
-```powershell
-$env:Path += ";C:\Users\muham\.bun\bin"
-bun x vitest --run
-```
-
-Die Struktur fuer Integrationstests ist vorbereitet:
-
-- REST-Tests unter `test/integration/rest`
-- GraphQL-Platzhalter unter `test/integration/graphql`
-
-Bis externe Infrastruktur (z.B. persistente DB in CI) final steht, sind die
-Tests so ausgelegt, dass sie ohne externe Services laufen.
-
 Beide Beispiele koennen auch als ausfuehrbare Dateien gebaut werden:
 
 ```powershell
