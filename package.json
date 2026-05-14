@@ -43,8 +43,8 @@
     "eslint": "eslint --concurrency auto src test package.json",
     "k6": "k6 run test\\lasttest\\script.ts",
     "leasot": "leasot --exit-nicely src/**/*.mts",
-    "prettier": "prettier -w \"src/**/*.mts\" \"test/**/*.ts\" \"package.json\" \"prettier.config.mts\" \".github/**/*.yml\"",
-    "prettier:check": "prettier --cache --check \"src/**/*.mts\" \"test/**/*.ts\" \"package.json\" \"prettier.config.mts\" \".github/**/*.yml\"",
+    "prettier": "prettier -w \"src/**/*.mts\" \"test/**/*.ts\" \"package.json\" \"prettier.config.mjs\" \".github/**/*.yml\"",
+    "prettier:check": "prettier --cache --check \"src/**/*.mts\" \"test/**/*.ts\" \"package.json\" \"prettier.config.mjs\" \".github/**/*.yml\"",
     "tsc": "tsc --pretty",
     "tsgo": "tsgo --stableTypeOrdering"
   },
