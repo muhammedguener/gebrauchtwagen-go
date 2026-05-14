@@ -21,6 +21,7 @@ type GebrauchtwagenResponse = {
     kraftstoffart: string;
     schadenfrei: boolean;
     kilometerstand: number;
+    version: number;
 };
 
 const adminHeaders = {
@@ -71,6 +72,16 @@ describe('REST GET /api/gebrauchtwagen', () => {
         expect(body.page).toBe(1);
         expect(body.size).toBe(2);
         expect(body.total).toBeGreaterThanOrEqual(2);
+    });
+
+    test('liefert nur die Anzahl bei count-only', async () => {
+        const response = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen?count-only`,
+        );
+        const body = (await response.json()) as { count: number };
+
+        expect(response.status).toBe(200);
+        expect(body.count).toBeGreaterThanOrEqual(6);
     });
 
     test('wendet einzelne Filter an (marke + modell)', async () => {
@@ -130,6 +141,14 @@ describe('REST GET /api/gebrauchtwagen', () => {
         expect(Array.isArray(body.details)).toBe(true);
         expect(body.details.length).toBeGreaterThan(0);
     });
+
+    test('liefert 406 bei nicht akzeptiertem Antwortformat', async () => {
+        const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen`, {
+            headers: { Accept: 'application/xml' },
+        });
+
+        expect(response.status).toBe(406);
+    });
 });
 
 describe('REST GET /api/gebrauchtwagen/:id', () => {
@@ -139,6 +158,23 @@ describe('REST GET /api/gebrauchtwagen/:id', () => {
 
         expect(response.status).toBe(200);
         expect(body.id).toBe(1);
+    });
+
+    test('setzt ETag und liefert 304 bei passendem If-None-Match', async () => {
+        const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen/1`);
+        const etag = response.headers.get('ETag');
+
+        expect(response.status).toBe(200);
+        expect(etag).toBe('W/"1"');
+
+        const cachedResponse = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen/1`,
+            {
+                headers: { 'If-None-Match': etag ?? '' },
+            },
+        );
+
+        expect(cachedResponse.status).toBe(304);
     });
 
     test('liefert 404 bei nicht vorhandener id (Fehlerfall)', async () => {

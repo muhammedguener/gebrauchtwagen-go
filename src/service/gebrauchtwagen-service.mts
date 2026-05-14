@@ -12,9 +12,10 @@ export type GebrauchtwagenDto = {
     kraftstoffart: Kraftstoffart;
     schadenfrei: boolean;
     kilometerstand: number;
+    version: number;
 };
 
-export type GebrauchtwagenWrite = Omit<GebrauchtwagenDto, 'id'>;
+export type GebrauchtwagenWrite = Omit<GebrauchtwagenDto, 'id' | 'version'>;
 
 export type GebrauchtwagenList = {
     data: GebrauchtwagenDto[];

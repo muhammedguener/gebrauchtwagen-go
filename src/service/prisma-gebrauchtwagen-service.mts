@@ -22,6 +22,7 @@ const mapGebrauchtwagen = (fahrzeug: Gebrauchtwagen): GebrauchtwagenDto => ({
     kraftstoffart: fahrzeug.kraftstoffart,
     schadenfrei: fahrzeug.schadenfrei,
     kilometerstand: fahrzeug.kilometerstand,
+    version: fahrzeug.version,
 });
 
 const createFin = (): string => `GW${Date.now()}`.slice(0, finLength);

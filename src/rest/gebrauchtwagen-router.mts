@@ -31,6 +31,8 @@ const badRequestStatus = 400;
 const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
 const notFoundStatus = 404;
+const notAcceptableStatus = 406;
+const notModifiedStatus = 304;
 
 const gebrauchtwagenBodySchema = z.object({
     marke: z.string().trim().min(1),
@@ -42,6 +44,16 @@ const gebrauchtwagenBodySchema = z.object({
 });
 
 type GebrauchtwagenBody = z.infer<typeof gebrauchtwagenBodySchema>;
+
+const acceptsJsonOrHtml = (acceptHeader: string | undefined): boolean => {
+    const accept = acceptHeader?.toLowerCase() ?? '*/*';
+    return accept === '*/*' || /json|html/u.test(accept);
+};
+
+const createNotAcceptableResponse = (): Response =>
+    new Response(undefined, { status: notAcceptableStatus });
+
+const createEtag = (version: number): string => `W/"${version}"`;
 
 const parseAuthorization = (
     authorizationHeader: string | undefined,
@@ -112,9 +124,21 @@ export const createGebrauchtwagenRouter = (
     const router = new Hono();
 
     router.get('/', async (context) => {
+        if (!acceptsJsonOrHtml(context.req.header('Accept'))) {
+            return createNotAcceptableResponse();
+        }
+
         try {
-            const search = parseGebrauchtwagenSearchParams(context.req.query());
+            const query = context.req.query();
+            const countOnly = query['count-only'];
+            delete query['count-only'];
+
+            const search = parseGebrauchtwagenSearchParams(query);
             const result = await service.list(search);
+
+            if (countOnly !== undefined) {
+                return context.json({ count: result.total }, okStatus);
+            }
 
             return context.json(
                 {
@@ -138,6 +162,10 @@ export const createGebrauchtwagenRouter = (
     });
 
     router.get('/:id', async (context) => {
+        if (!acceptsJsonOrHtml(context.req.header('Accept'))) {
+            return createNotAcceptableResponse();
+        }
+
         const id = Number(context.req.param('id'));
 
         if (!Number.isInteger(id) || id <= 0) {
@@ -162,6 +190,12 @@ export const createGebrauchtwagenRouter = (
             );
         }
 
+        const etag = createEtag(item.version);
+        if (context.req.header('If-None-Match') === etag) {
+            return context.body(null, notModifiedStatus); // eslint-disable-line unicorn/no-null
+        }
+
+        context.header('ETag', etag);
         return context.json(item, okStatus);
     });
 

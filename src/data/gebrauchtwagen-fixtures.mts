@@ -14,6 +14,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         kraftstoffart: 'BENZIN',
         schadenfrei: false,
         kilometerstand: 20_000,
+        version: 1,
     },
     {
         id: 2,
@@ -23,6 +24,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         kraftstoffart: 'DIESEL',
         schadenfrei: true,
         kilometerstand: 42_000,
+        version: 1,
     },
     {
         id: 3,
@@ -32,6 +34,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         kraftstoffart: 'BENZIN',
         schadenfrei: true,
         kilometerstand: 36_500,
+        version: 1,
     },
     {
         id: 4,
@@ -41,6 +44,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         kraftstoffart: 'ELEKTRO',
         schadenfrei: true,
         kilometerstand: 18_000,
+        version: 1,
     },
     {
         id: 5,
@@ -50,6 +54,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         kraftstoffart: 'BENZIN',
         schadenfrei: false,
         kilometerstand: 51_200,
+        version: 1,
     },
     {
         id: 6,
@@ -59,6 +64,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         kraftstoffart: 'HYBRID',
         schadenfrei: true,
         kilometerstand: 91_200,
+        version: 1,
     },
 ];
 
@@ -83,7 +89,7 @@ const createGebrauchtwagenFixture = (
 ): GebrauchtwagenDto => {
     const nextId =
         Math.max(...gebrauchtwagenFixturesState.map((item) => item.id), 0) + 1;
-    const created: GebrauchtwagenDto = { id: nextId, ...fahrzeug };
+    const created: GebrauchtwagenDto = { id: nextId, version: 1, ...fahrzeug };
     gebrauchtwagenFixturesState.push(created);
 
     return { ...created };
@@ -100,7 +106,12 @@ const updateGebrauchtwagenFixture = (
         return undefined;
     }
 
-    const updated: GebrauchtwagenDto = { id, ...fahrzeug };
+    const current = gebrauchtwagenFixturesState[index];
+    const updated: GebrauchtwagenDto = {
+        id,
+        version: (current?.version ?? 0) + 1,
+        ...fahrzeug,
+    };
     gebrauchtwagenFixturesState[index] = updated;
 
     return { ...updated };
