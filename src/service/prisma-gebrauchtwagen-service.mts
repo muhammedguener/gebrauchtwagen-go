@@ -86,7 +86,10 @@ export const createPrismaGebrauchtwagenService = (): GebrauchtwagenService => {
             }
 
             const updated = await prisma.gebrauchtwagen.update({
-                data: fahrzeug,
+                data: {
+                    ...fahrzeug,
+                    version: { increment: 1 },
+                },
                 where: { id },
             });
 
