@@ -66,6 +66,9 @@ docker compose -f extras\compose\postgres\compose.yml up -d db
 Die zentrale Prisma-Factory fuer die App liegt in
 `src/config/prisma-client.mts`.
 Sie kapselt Adapter, Logging und den Zugriff auf `DATABASE_URL`.
+Der REST-Router ist ueber eine Service-Schnittstelle angebunden; im
+Produktivpfad verwendet `src/service/prisma-gebrauchtwagen-service.mts` diese
+Factory, waehrend die Integrationstests einen Fixture-Service injizieren.
 
 Ein einfacher Verbindungscheck gegen die Compose-DB erfolgt ueber die
 Beispielskripte:

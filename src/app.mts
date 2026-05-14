@@ -9,7 +9,8 @@ import { paths } from './config/paths.mts';
 import { getLogger } from './logger/logger.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
-import { gebrauchtwagenRouter } from './rest/gebrauchtwagen-router.mts';
+import { createGebrauchtwagenRouter } from './rest/gebrauchtwagen-router.mts';
+import type { GebrauchtwagenService } from './service/gebrauchtwagen-service.mts';
 
 const notFoundStatus = 404;
 const internalServerErrorStatus = 500;
@@ -23,7 +24,11 @@ const additionalSecurityHeaders = createMiddleware(async (context, next) => {
     await next();
 });
 
-export const createApp = (): Hono => {
+type AppOptions = {
+    gebrauchtwagenService?: GebrauchtwagenService;
+};
+
+export const createApp = (options: AppOptions = {}): Hono => {
     const app = new Hono();
 
     app.use(
@@ -39,7 +44,10 @@ export const createApp = (): Hono => {
         context.json({ app: 'gebrauchtwagen', status: 'up' }, okStatus),
     );
     app.route(paths.health, healthRouter);
-    app.route(paths.rest, gebrauchtwagenRouter);
+    app.route(
+        paths.rest,
+        createGebrauchtwagenRouter(options.gebrauchtwagenService),
+    );
 
     app.notFound((context) =>
         context.json(

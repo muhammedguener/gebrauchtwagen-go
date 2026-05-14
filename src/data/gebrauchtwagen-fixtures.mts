@@ -1,17 +1,9 @@
+import { buildPagination } from '../gebrauchtwagen-query.mts';
 import type {
-    Fahrzeugklasse,
-    Kraftstoffart,
-} from '../generated/prisma/client.ts';
-
-export type GebrauchtwagenDto = {
-    id: number;
-    marke: string;
-    modell: string;
-    fahrzeugklasse: Fahrzeugklasse;
-    kraftstoffart: Kraftstoffart;
-    schadenfrei: boolean;
-    kilometerstand: number;
-};
+    GebrauchtwagenDto,
+    GebrauchtwagenService,
+    GebrauchtwagenWrite,
+} from '../service/gebrauchtwagen-service.mts';
 
 const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
     {
@@ -76,18 +68,18 @@ let gebrauchtwagenFixturesState = initialGebrauchtwagenFixtures.map(
     }),
 );
 
-export const listGebrauchtwagenFixtures = (): GebrauchtwagenDto[] =>
+const listGebrauchtwagenFixtures = (): GebrauchtwagenDto[] =>
     gebrauchtwagenFixturesState.map((fahrzeug) => ({ ...fahrzeug }));
 
-export const findGebrauchtwagenFixtureById = (
+const findGebrauchtwagenFixtureById = (
     id: number,
 ): GebrauchtwagenDto | undefined => {
     const fahrzeug = gebrauchtwagenFixturesState.find((item) => item.id === id);
     return fahrzeug === undefined ? undefined : { ...fahrzeug };
 };
 
-export const createGebrauchtwagenFixture = (
-    fahrzeug: Omit<GebrauchtwagenDto, 'id'>,
+const createGebrauchtwagenFixture = (
+    fahrzeug: GebrauchtwagenWrite,
 ): GebrauchtwagenDto => {
     const nextId =
         Math.max(...gebrauchtwagenFixturesState.map((item) => item.id), 0) + 1;
@@ -97,9 +89,9 @@ export const createGebrauchtwagenFixture = (
     return { ...created };
 };
 
-export const updateGebrauchtwagenFixture = (
+const updateGebrauchtwagenFixture = (
     id: number,
-    fahrzeug: Omit<GebrauchtwagenDto, 'id'>,
+    fahrzeug: GebrauchtwagenWrite,
 ): GebrauchtwagenDto | undefined => {
     const index = gebrauchtwagenFixturesState.findIndex(
         (item) => item.id === id,
@@ -114,7 +106,7 @@ export const updateGebrauchtwagenFixture = (
     return { ...updated };
 };
 
-export const deleteGebrauchtwagenFixture = (id: number): boolean => {
+const deleteGebrauchtwagenFixture = (id: number): boolean => {
     const initialLength = gebrauchtwagenFixturesState.length;
     gebrauchtwagenFixturesState = gebrauchtwagenFixturesState.filter(
         (item) => item.id !== id,
@@ -130,3 +122,81 @@ export const resetGebrauchtwagenFixtures = (): void => {
         }),
     );
 };
+
+const includesInsensitive = (value: string, query: string): boolean =>
+    value.toLowerCase().includes(query.toLowerCase());
+
+const matchesSearch = (
+    item: GebrauchtwagenDto,
+    search: Parameters<GebrauchtwagenService['list']>[0],
+): boolean => {
+    if (
+        search.marke !== undefined &&
+        !includesInsensitive(item.marke, search.marke)
+    ) {
+        return false;
+    }
+
+    if (
+        search.modell !== undefined &&
+        !includesInsensitive(item.modell, search.modell)
+    ) {
+        return false;
+    }
+
+    if (
+        search.fahrzeugklasse !== undefined &&
+        item.fahrzeugklasse !== search.fahrzeugklasse
+    ) {
+        return false;
+    }
+
+    if (
+        search.kraftstoffart !== undefined &&
+        item.kraftstoffart !== search.kraftstoffart
+    ) {
+        return false;
+    }
+
+    if (
+        search.schadenfrei !== undefined &&
+        item.schadenfrei !== search.schadenfrei
+    ) {
+        return false;
+    }
+
+    return true;
+};
+
+export const createFixtureGebrauchtwagenService =
+    (): GebrauchtwagenService => ({
+        list(search) {
+            const filtered = listGebrauchtwagenFixtures().filter((item) =>
+                matchesSearch(item, search),
+            );
+            const { skip, take } = buildPagination(search);
+
+            return Promise.resolve({
+                data: filtered.slice(skip, skip + take),
+                page: search.page,
+                size: search.size,
+                total: filtered.length,
+            });
+        },
+
+        findById(id) {
+            return Promise.resolve(findGebrauchtwagenFixtureById(id));
+        },
+
+        create(fahrzeug) {
+            return Promise.resolve(createGebrauchtwagenFixture(fahrzeug));
+        },
+
+        update(id, fahrzeug) {
+            return Promise.resolve(updateGebrauchtwagenFixture(id, fahrzeug));
+        },
+
+        delete(id) {
+            return Promise.resolve(deleteGebrauchtwagenFixture(id));
+        },
+    });

@@ -1,17 +1,8 @@
 import { Hono } from 'hono';
 import { z, ZodError } from 'zod';
-import {
-    buildPagination,
-    parseGebrauchtwagenSearchParams,
-} from '../gebrauchtwagen-query.mts';
-import {
-    createGebrauchtwagenFixture,
-    deleteGebrauchtwagenFixture,
-    findGebrauchtwagenFixtureById,
-    type GebrauchtwagenDto,
-    listGebrauchtwagenFixtures,
-    updateGebrauchtwagenFixture,
-} from '../data/gebrauchtwagen-fixtures.mts';
+import { parseGebrauchtwagenSearchParams } from '../gebrauchtwagen-query.mts';
+import { createPrismaGebrauchtwagenService } from '../service/prisma-gebrauchtwagen-service.mts';
+import type { GebrauchtwagenService } from '../service/gebrauchtwagen-service.mts';
 
 const fahrzeugklasseValues = [
     'KLEINWAGEN',
@@ -114,172 +105,54 @@ const createValidationErrorResponse = (error: ZodError): Response =>
         { status: badRequestStatus },
     );
 
-const includesInsensitive = (value: string, query: string): boolean =>
-    value.toLowerCase().includes(query.toLowerCase());
+// eslint-disable-next-line max-lines-per-function
+export const createGebrauchtwagenRouter = (
+    service: GebrauchtwagenService = createPrismaGebrauchtwagenService(),
+): Hono => {
+    const router = new Hono();
 
-const filterGebrauchtwagen = (
-    items: GebrauchtwagenDto[],
-    search: ReturnType<typeof parseGebrauchtwagenSearchParams>,
-): GebrauchtwagenDto[] =>
-    items.filter((item) => {
-        if (
-            search.marke !== undefined &&
-            !includesInsensitive(item.marke, search.marke)
-        ) {
-            return false;
+    router.get('/', async (context) => {
+        try {
+            const search = parseGebrauchtwagenSearchParams(context.req.query());
+            const result = await service.list(search);
+
+            return context.json(
+                {
+                    data: result.data,
+                    page: result.page,
+                    size: result.size,
+                    total: result.total,
+                },
+                okStatus,
+            );
+        } catch (err: unknown) {
+            if (err instanceof ZodError) {
+                return context.newResponse(
+                    createValidationErrorResponse(err).body,
+                    badRequestStatus,
+                );
+            }
+
+            throw err;
         }
-
-        if (
-            search.modell !== undefined &&
-            !includesInsensitive(item.modell, search.modell)
-        ) {
-            return false;
-        }
-
-        if (
-            search.fahrzeugklasse !== undefined &&
-            item.fahrzeugklasse !== search.fahrzeugklasse
-        ) {
-            return false;
-        }
-
-        if (
-            search.kraftstoffart !== undefined &&
-            item.kraftstoffart !== search.kraftstoffart
-        ) {
-            return false;
-        }
-
-        if (
-            search.schadenfrei !== undefined &&
-            item.schadenfrei !== search.schadenfrei
-        ) {
-            return false;
-        }
-
-        return true;
     });
 
-export const gebrauchtwagenRouter = new Hono();
+    router.get('/:id', async (context) => {
+        const id = Number(context.req.param('id'));
 
-gebrauchtwagenRouter.get('/', (context) => {
-    try {
-        const search = parseGebrauchtwagenSearchParams(context.req.query());
-        const filtered = filterGebrauchtwagen(
-            listGebrauchtwagenFixtures(),
-            search,
-        );
-        const { skip, take } = buildPagination(search);
-        const data = filtered.slice(skip, skip + take);
-
-        return context.json(
-            {
-                data,
-                page: search.page,
-                size: search.size,
-                total: filtered.length,
-            },
-            okStatus,
-        );
-    } catch (err: unknown) {
-        if (err instanceof ZodError) {
-            return context.newResponse(
-                createValidationErrorResponse(err).body,
+        if (!Number.isInteger(id) || id <= 0) {
+            return context.json(
+                {
+                    error: 'VALIDATION_ERROR',
+                    message: 'id muss eine positive ganze Zahl sein',
+                },
                 badRequestStatus,
             );
         }
 
-        throw err;
-    }
-});
+        const item = await service.findById(id);
 
-gebrauchtwagenRouter.get('/:id', (context) => {
-    const id = Number(context.req.param('id'));
-
-    if (!Number.isInteger(id) || id <= 0) {
-        return context.json(
-            {
-                error: 'VALIDATION_ERROR',
-                message: 'id muss eine positive ganze Zahl sein',
-            },
-            badRequestStatus,
-        );
-    }
-
-    const item = findGebrauchtwagenFixtureById(id);
-
-    if (item === undefined) {
-        return context.json(
-            {
-                error: 'NOT_FOUND',
-                message: `Kein Gebrauchtwagen mit id=${id} gefunden`,
-            },
-            notFoundStatus,
-        );
-    }
-
-    return context.json(item, okStatus);
-});
-
-gebrauchtwagenRouter.post('/', async (context) => {
-    const authError = requireAdminAuthorization(
-        context.req.header('authorization'),
-    );
-    if (authError !== undefined) {
-        return context.newResponse(
-            authError.body,
-            authError.status as
-                | typeof unauthorizedStatus
-                | typeof forbiddenStatus,
-        );
-    }
-
-    try {
-        const payload = await parseBody(context.req.raw);
-        const created = createGebrauchtwagenFixture(payload);
-
-        return context.json(created, createdStatus);
-    } catch (err: unknown) {
-        if (err instanceof ZodError) {
-            return context.newResponse(
-                createValidationErrorResponse(err).body,
-                badRequestStatus,
-            );
-        }
-
-        throw err;
-    }
-});
-
-gebrauchtwagenRouter.put('/:id', async (context) => {
-    const authError = requireAdminAuthorization(
-        context.req.header('authorization'),
-    );
-    if (authError !== undefined) {
-        return context.newResponse(
-            authError.body,
-            authError.status as
-                | typeof unauthorizedStatus
-                | typeof forbiddenStatus,
-        );
-    }
-
-    const id = Number(context.req.param('id'));
-    if (!Number.isInteger(id) || id <= 0) {
-        return context.json(
-            {
-                error: 'VALIDATION_ERROR',
-                message: 'id muss eine positive ganze Zahl sein',
-            },
-            badRequestStatus,
-        );
-    }
-
-    try {
-        const payload = await parseBody(context.req.raw);
-        const updated = updateGebrauchtwagenFixture(id, payload);
-
-        if (updated === undefined) {
+        if (item === undefined) {
             return context.json(
                 {
                     error: 'NOT_FOUND',
@@ -289,53 +162,127 @@ gebrauchtwagenRouter.put('/:id', async (context) => {
             );
         }
 
-        return context.json(updated, okStatus);
-    } catch (err: unknown) {
-        if (err instanceof ZodError) {
+        return context.json(item, okStatus);
+    });
+
+    router.post('/', async (context) => {
+        const authError = requireAdminAuthorization(
+            context.req.header('authorization'),
+        );
+        if (authError !== undefined) {
             return context.newResponse(
-                createValidationErrorResponse(err).body,
+                authError.body,
+                authError.status as
+                    | typeof unauthorizedStatus
+                    | typeof forbiddenStatus,
+            );
+        }
+
+        try {
+            const payload = await parseBody(context.req.raw);
+            const created = await service.create(payload);
+
+            return context.json(created, createdStatus);
+        } catch (err: unknown) {
+            if (err instanceof ZodError) {
+                return context.newResponse(
+                    createValidationErrorResponse(err).body,
+                    badRequestStatus,
+                );
+            }
+
+            throw err;
+        }
+    });
+
+    router.put('/:id', async (context) => {
+        const authError = requireAdminAuthorization(
+            context.req.header('authorization'),
+        );
+        if (authError !== undefined) {
+            return context.newResponse(
+                authError.body,
+                authError.status as
+                    | typeof unauthorizedStatus
+                    | typeof forbiddenStatus,
+            );
+        }
+
+        const id = Number(context.req.param('id'));
+        if (!Number.isInteger(id) || id <= 0) {
+            return context.json(
+                {
+                    error: 'VALIDATION_ERROR',
+                    message: 'id muss eine positive ganze Zahl sein',
+                },
                 badRequestStatus,
             );
         }
 
-        throw err;
-    }
-});
+        try {
+            const payload = await parseBody(context.req.raw);
+            const updated = await service.update(id, payload);
 
-gebrauchtwagenRouter.delete('/:id', (context) => {
-    const authError = requireAdminAuthorization(
-        context.req.header('authorization'),
-    );
-    if (authError !== undefined) {
-        return context.newResponse(
-            authError.body,
-            authError.status as
-                | typeof unauthorizedStatus
-                | typeof forbiddenStatus,
+            if (updated === undefined) {
+                return context.json(
+                    {
+                        error: 'NOT_FOUND',
+                        message: `Kein Gebrauchtwagen mit id=${id} gefunden`,
+                    },
+                    notFoundStatus,
+                );
+            }
+
+            return context.json(updated, okStatus);
+        } catch (err: unknown) {
+            if (err instanceof ZodError) {
+                return context.newResponse(
+                    createValidationErrorResponse(err).body,
+                    badRequestStatus,
+                );
+            }
+
+            throw err;
+        }
+    });
+
+    router.delete('/:id', async (context) => {
+        const authError = requireAdminAuthorization(
+            context.req.header('authorization'),
         );
-    }
+        if (authError !== undefined) {
+            return context.newResponse(
+                authError.body,
+                authError.status as
+                    | typeof unauthorizedStatus
+                    | typeof forbiddenStatus,
+            );
+        }
 
-    const id = Number(context.req.param('id'));
-    if (!Number.isInteger(id) || id <= 0) {
-        return context.json(
-            {
-                error: 'VALIDATION_ERROR',
-                message: 'id muss eine positive ganze Zahl sein',
-            },
-            badRequestStatus,
-        );
-    }
+        const id = Number(context.req.param('id'));
+        if (!Number.isInteger(id) || id <= 0) {
+            return context.json(
+                {
+                    error: 'VALIDATION_ERROR',
+                    message: 'id muss eine positive ganze Zahl sein',
+                },
+                badRequestStatus,
+            );
+        }
 
-    const deleted = deleteGebrauchtwagenFixture(id);
-    if (!deleted) {
-        return context.json(
-            {
-                error: 'NOT_FOUND',
-                message: `Kein Gebrauchtwagen mit id=${id} gefunden`,
-            },
-            notFoundStatus,
-        );
-    }
+        const deleted = await service.delete(id);
+        if (!deleted) {
+            return context.json(
+                {
+                    error: 'NOT_FOUND',
+                    message: `Kein Gebrauchtwagen mit id=${id} gefunden`,
+                },
+                notFoundStatus,
+            );
+        }
 
-    return context.body(null, noContentStatus); // eslint-disable-line unicorn/no-null
-});
+        return context.body(null, noContentStatus); // eslint-disable-line unicorn/no-null
+    });
+
+    return router;
+};
