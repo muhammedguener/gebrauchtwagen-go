@@ -23,7 +23,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Generate Prisma client
-        run: bun prisma generate
+        run: bun run prisma:generate
         env:
           DATABASE_URL: postgresql://gebrauchtwagen:gebrauchtwagen@localhost:5432/gebrauchtwagen?schema=gebrauchtwagen
 
@@ -33,8 +33,8 @@ jobs:
       - name: ESLint
         run: bun run eslint
 
-      - name: Prettier
-        run: bun run prettier:check
+      - name: Formatter
+        run: bun run fmt:check
 
       - name: Tests
         run: bun run test
