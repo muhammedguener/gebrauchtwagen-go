@@ -35,3 +35,6 @@ jobs:
 
       - name: Prettier
         run: bun run prettier:check
+
+      - name: Tests
+        run: bun run test
