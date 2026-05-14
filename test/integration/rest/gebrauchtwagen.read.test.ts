@@ -1,7 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
+import '../setup.ts';
 
 type ListResponse = {
-    data: Array<{ id: number; marke: string; modell: string; schadenfrei: boolean }>;
+    data: {
+        id: number;
+        marke: string;
+        modell: string;
+        schadenfrei: boolean;
+    }[];
     page: number;
     size: number;
     total: number;
@@ -46,8 +52,18 @@ const getBaseUrl = (): string => {
 };
 
 describe('REST GET /api/gebrauchtwagen', () => {
-    it('liefert eine lesbare Liste (Erfolgsfall)', async () => {
-        const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen?page=1&size=2`);
+    test('liefert den Health-Status', async () => {
+        const response = await fetch(`${getBaseUrl()}/health/liveness`);
+        const body = (await response.json()) as { status: string };
+
+        expect(response.status).toBe(200);
+        expect(body.status).toBe('up');
+    });
+
+    test('liefert eine lesbare Liste (Erfolgsfall)', async () => {
+        const response = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen?page=1&size=2`,
+        );
         const body = (await response.json()) as ListResponse;
 
         expect(response.status).toBe(200);
@@ -57,7 +73,7 @@ describe('REST GET /api/gebrauchtwagen', () => {
         expect(body.total).toBeGreaterThanOrEqual(2);
     });
 
-    it('wendet einzelne Filter an (marke + modell)', async () => {
+    test('wendet einzelne Filter an (marke + modell)', async () => {
         const response = await fetch(
             `${getBaseUrl()}/api/gebrauchtwagen?marke=vw&modell=golf&page=1&size=10`,
         );
@@ -66,23 +82,31 @@ describe('REST GET /api/gebrauchtwagen', () => {
         expect(response.status).toBe(200);
         expect(body.data.length).toBeGreaterThan(0);
         expect(body.data.every((item) => item.marke === 'VW')).toBe(true);
-        expect(body.data.every((item) => item.modell.toLowerCase().includes('golf'))).toBe(true);
+        expect(
+            body.data.every((item) =>
+                item.modell.toLowerCase().includes('golf'),
+            ),
+        ).toBe(true);
     });
 
-    it('unterstützt kombinierte Filter', async () => {
+    test('unterstützt kombinierte Filter', async () => {
         const response = await fetch(
             `${getBaseUrl()}/api/gebrauchtwagen?fahrzeugklasse=MITTELKLASSE&kraftstoffart=ELEKTRO&schadenfrei=true`,
         );
         const body = (await response.json()) as ListResponse;
 
         expect(response.status).toBe(200);
-        expect(body.data.length).toBe(1);
+        expect(body.data).toHaveLength(1);
         expect(body.data[0]?.id).toBe(4);
     });
 
-    it('liefert reproduzierbare Paginierung', async () => {
-        const page1Response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen?page=1&size=2`);
-        const page2Response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen?page=2&size=2`);
+    test('liefert reproduzierbare Paginierung', async () => {
+        const page1Response = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen?page=1&size=2`,
+        );
+        const page2Response = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen?page=2&size=2`,
+        );
         const page1Body = (await page1Response.json()) as ListResponse;
         const page2Body = (await page2Response.json()) as ListResponse;
 
@@ -92,9 +116,14 @@ describe('REST GET /api/gebrauchtwagen', () => {
         expect(page2Body.data.map((item) => item.id)).toEqual([3, 4]);
     });
 
-    it('liefert validierbaren Fehler bei ungültigen Filtern', async () => {
-        const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen?kraftstoffart=STROM`);
-        const body = (await response.json()) as { error: string; details: unknown[] };
+    test('liefert validierbaren Fehler bei ungültigen Filtern', async () => {
+        const response = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen?kraftstoffart=STROM`,
+        );
+        const body = (await response.json()) as {
+            error: string;
+            details: unknown[];
+        };
 
         expect(response.status).toBe(400);
         expect(body.error).toBe('VALIDATION_ERROR');
@@ -104,7 +133,7 @@ describe('REST GET /api/gebrauchtwagen', () => {
 });
 
 describe('REST GET /api/gebrauchtwagen/:id', () => {
-    it('liefert ein Objekt bei vorhandener id', async () => {
+    test('liefert ein Objekt bei vorhandener id', async () => {
         const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen/1`);
         const body = (await response.json()) as { id: number };
 
@@ -112,7 +141,7 @@ describe('REST GET /api/gebrauchtwagen/:id', () => {
         expect(body.id).toBe(1);
     });
 
-    it('liefert 404 bei nicht vorhandener id (Fehlerfall)', async () => {
+    test('liefert 404 bei nicht vorhandener id (Fehlerfall)', async () => {
         const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen/9999`);
         const body = (await response.json()) as { error: string };
 
@@ -122,7 +151,7 @@ describe('REST GET /api/gebrauchtwagen/:id', () => {
 });
 
 describe('REST CRUD /api/gebrauchtwagen', () => {
-    it('legt einen Gebrauchtwagen an (POST Erfolgsfall)', async () => {
+    test('legt einen Gebrauchtwagen an (POST Erfolgsfall)', async () => {
         const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen`, {
             method: 'POST',
             headers: adminHeaders,
@@ -135,24 +164,30 @@ describe('REST CRUD /api/gebrauchtwagen', () => {
         expect(body.marke).toBe('BMW');
     });
 
-    it('aktualisiert einen Gebrauchtwagen (PUT Erfolgsfall)', async () => {
-        const createResponse = await fetch(`${getBaseUrl()}/api/gebrauchtwagen`, {
-            method: 'POST',
-            headers: adminHeaders,
-            body: JSON.stringify(validPayload),
-        });
+    test('aktualisiert einen Gebrauchtwagen (PUT Erfolgsfall)', async () => {
+        const createResponse = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen`,
+            {
+                method: 'POST',
+                headers: adminHeaders,
+                body: JSON.stringify(validPayload),
+            },
+        );
         const created = (await createResponse.json()) as GebrauchtwagenResponse;
 
-        const updateResponse = await fetch(`${getBaseUrl()}/api/gebrauchtwagen/${created.id}`, {
-            method: 'PUT',
-            headers: adminHeaders,
-            body: JSON.stringify({
-                ...validPayload,
-                modell: '330i',
-                kilometerstand: 28000,
-                schadenfrei: false,
-            }),
-        });
+        const updateResponse = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen/${created.id}`,
+            {
+                method: 'PUT',
+                headers: adminHeaders,
+                body: JSON.stringify({
+                    ...validPayload,
+                    modell: '330i',
+                    kilometerstand: 28000,
+                    schadenfrei: false,
+                }),
+            },
+        );
         const updated = (await updateResponse.json()) as GebrauchtwagenResponse;
 
         expect(updateResponse.status).toBe(200);
@@ -161,25 +196,33 @@ describe('REST CRUD /api/gebrauchtwagen', () => {
         expect(updated.schadenfrei).toBe(false);
     });
 
-    it('loescht einen Gebrauchtwagen (DELETE Erfolgsfall)', async () => {
-        const createResponse = await fetch(`${getBaseUrl()}/api/gebrauchtwagen`, {
-            method: 'POST',
-            headers: adminHeaders,
-            body: JSON.stringify(validPayload),
-        });
+    test('loescht einen Gebrauchtwagen (DELETE Erfolgsfall)', async () => {
+        const createResponse = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen`,
+            {
+                method: 'POST',
+                headers: adminHeaders,
+                body: JSON.stringify(validPayload),
+            },
+        );
         const created = (await createResponse.json()) as GebrauchtwagenResponse;
 
-        const deleteResponse = await fetch(`${getBaseUrl()}/api/gebrauchtwagen/${created.id}`, {
-            method: 'DELETE',
-            headers: adminHeaders,
-        });
-        const getResponse = await fetch(`${getBaseUrl()}/api/gebrauchtwagen/${created.id}`);
+        const deleteResponse = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen/${created.id}`,
+            {
+                method: 'DELETE',
+                headers: adminHeaders,
+            },
+        );
+        const getResponse = await fetch(
+            `${getBaseUrl()}/api/gebrauchtwagen/${created.id}`,
+        );
 
         expect(deleteResponse.status).toBe(204);
         expect(getResponse.status).toBe(404);
     });
 
-    it('liefert Validierungsfehler bei ungueltigem POST-Body', async () => {
+    test('liefert Validierungsfehler bei ungueltigem POST-Body', async () => {
         const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen`, {
             method: 'POST',
             headers: adminHeaders,
@@ -196,7 +239,7 @@ describe('REST CRUD /api/gebrauchtwagen', () => {
 });
 
 describe('REST Auth-Basistests /api/gebrauchtwagen', () => {
-    it('liefert 401 ohne Bearer-Token', async () => {
+    test('liefert 401 ohne Bearer-Token', async () => {
         const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen`, {
             method: 'POST',
             headers: {
@@ -210,7 +253,7 @@ describe('REST Auth-Basistests /api/gebrauchtwagen', () => {
         expect(body.error).toBe('UNAUTHORIZED');
     });
 
-    it('liefert 403 mit falscher Rolle', async () => {
+    test('liefert 403 mit falscher Rolle', async () => {
         const response = await fetch(`${getBaseUrl()}/api/gebrauchtwagen`, {
             method: 'POST',
             headers: userHeaders,

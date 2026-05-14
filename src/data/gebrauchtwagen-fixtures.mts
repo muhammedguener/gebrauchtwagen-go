@@ -1,4 +1,7 @@
-import type { Fahrzeugklasse, Kraftstoffart } from '../generated/prisma/client.ts';
+import type {
+    Fahrzeugklasse,
+    Kraftstoffart,
+} from '../generated/prisma/client.ts';
 
 export type GebrauchtwagenDto = {
     id: number;
@@ -18,7 +21,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         fahrzeugklasse: 'KOMPAKTKLASSE',
         kraftstoffart: 'BENZIN',
         schadenfrei: false,
-        kilometerstand: 20000,
+        kilometerstand: 20_000,
     },
     {
         id: 2,
@@ -27,7 +30,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         fahrzeugklasse: 'MITTELKLASSE',
         kraftstoffart: 'DIESEL',
         schadenfrei: true,
-        kilometerstand: 42000,
+        kilometerstand: 42_000,
     },
     {
         id: 3,
@@ -36,7 +39,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         fahrzeugklasse: 'KOMPAKTKLASSE',
         kraftstoffart: 'BENZIN',
         schadenfrei: true,
-        kilometerstand: 36500,
+        kilometerstand: 36_500,
     },
     {
         id: 4,
@@ -45,7 +48,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         fahrzeugklasse: 'MITTELKLASSE',
         kraftstoffart: 'ELEKTRO',
         schadenfrei: true,
-        kilometerstand: 18000,
+        kilometerstand: 18_000,
     },
     {
         id: 5,
@@ -54,7 +57,7 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         fahrzeugklasse: 'KLEINWAGEN',
         kraftstoffart: 'BENZIN',
         schadenfrei: false,
-        kilometerstand: 51200,
+        kilometerstand: 51_200,
     },
     {
         id: 6,
@@ -63,13 +66,15 @@ const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
         fahrzeugklasse: 'MITTELKLASSE',
         kraftstoffart: 'HYBRID',
         schadenfrei: true,
-        kilometerstand: 91200,
+        kilometerstand: 91_200,
     },
 ];
 
-let gebrauchtwagenFixturesState = initialGebrauchtwagenFixtures.map((fahrzeug) => ({
-    ...fahrzeug,
-}));
+let gebrauchtwagenFixturesState = initialGebrauchtwagenFixtures.map(
+    (fahrzeug) => ({
+        ...fahrzeug,
+    }),
+);
 
 export const listGebrauchtwagenFixtures = (): GebrauchtwagenDto[] =>
     gebrauchtwagenFixturesState.map((fahrzeug) => ({ ...fahrzeug }));
@@ -84,7 +89,8 @@ export const findGebrauchtwagenFixtureById = (
 export const createGebrauchtwagenFixture = (
     fahrzeug: Omit<GebrauchtwagenDto, 'id'>,
 ): GebrauchtwagenDto => {
-    const nextId = Math.max(...gebrauchtwagenFixturesState.map((item) => item.id), 0) + 1;
+    const nextId =
+        Math.max(...gebrauchtwagenFixturesState.map((item) => item.id), 0) + 1;
     const created: GebrauchtwagenDto = { id: nextId, ...fahrzeug };
     gebrauchtwagenFixturesState.push(created);
 
@@ -95,8 +101,10 @@ export const updateGebrauchtwagenFixture = (
     id: number,
     fahrzeug: Omit<GebrauchtwagenDto, 'id'>,
 ): GebrauchtwagenDto | undefined => {
-    const index = gebrauchtwagenFixturesState.findIndex((item) => item.id === id);
-    if (index < 0) {
+    const index = gebrauchtwagenFixturesState.findIndex(
+        (item) => item.id === id,
+    );
+    if (index === -1) {
         return undefined;
     }
 
@@ -108,13 +116,17 @@ export const updateGebrauchtwagenFixture = (
 
 export const deleteGebrauchtwagenFixture = (id: number): boolean => {
     const initialLength = gebrauchtwagenFixturesState.length;
-    gebrauchtwagenFixturesState = gebrauchtwagenFixturesState.filter((item) => item.id !== id);
+    gebrauchtwagenFixturesState = gebrauchtwagenFixturesState.filter(
+        (item) => item.id !== id,
+    );
 
     return gebrauchtwagenFixturesState.length !== initialLength;
 };
 
 export const resetGebrauchtwagenFixtures = (): void => {
-    gebrauchtwagenFixturesState = initialGebrauchtwagenFixtures.map((fahrzeug) => ({
-        ...fahrzeug,
-    }));
+    gebrauchtwagenFixturesState = initialGebrauchtwagenFixtures.map(
+        (fahrzeug) => ({
+            ...fahrzeug,
+        }),
+    );
 };

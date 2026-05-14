@@ -21,6 +21,10 @@ const kraftstoffartValues = [
     'WASSERSTOFF',
 ] as const;
 
+const defaultPageSize = 5;
+const maxPageSize = 50;
+const prismaAndOperator = 'AND';
+
 const booleanFromString = z.preprocess((value) => {
     if (typeof value !== 'string') {
         return value;
@@ -45,11 +49,21 @@ const searchSchema = z
         kraftstoffart: z.enum(kraftstoffartValues).optional(),
         schadenfrei: booleanFromString.optional(),
         page: z.coerce.number().int().min(1).default(1),
-        size: z.coerce.number().int().min(1).max(50).default(5),
+        size: z.coerce
+            .number()
+            .int()
+            .min(1)
+            .max(maxPageSize)
+            .default(defaultPageSize),
     })
     .strict();
 
 export type GebrauchtwagenSearchParams = z.infer<typeof searchSchema>;
+
+type Pagination = {
+    skip: number;
+    take: number;
+};
 
 export const parseGebrauchtwagenSearchParams = (
     input: unknown,
@@ -80,12 +94,12 @@ export const buildGebrauchtwagenWhere = (
         and.push({ schadenfrei: filter.schadenfrei });
     }
 
-    return and.length === 0 ? {} : { AND: and };
+    return and.length === 0 ? {} : { [prismaAndOperator]: and };
 };
 
 export const buildPagination = (
     filter: Pick<GebrauchtwagenSearchParams, 'page' | 'size'>,
-): Pick<Prisma.GebrauchtwagenFindManyArgs, 'skip' | 'take'> => ({
+): Pagination => ({
     skip: (filter.page - 1) * filter.size,
     take: filter.size,
 });

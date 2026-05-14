@@ -1,34 +1,31 @@
 # gebrauchtwagen-ts
 
-Neutrale Prisma- und TypeScript-Grundlage fuer die weitere Entwicklung des
+Hono-, Prisma- und TypeScript-Appserver fuer die weitere Entwicklung des
 Aggregats `gebrauchtwagen`.
 
 ## Zweck
 
-Dieses Repository startet bewusst ohne fachliches Beispielaggregat. Es dient als
-separater Team-Startpunkt neben dem bestehenden FastAPI-Repository
-`gebrauchtwagen`.
+Dieses Repository ist der TypeScript-Appserver fuer das Aggregat
+`gebrauchtwagen`. Es kombiniert Hono fuer REST-Endpunkte, Prisma fuer den
+Datenbankzugriff und Vitest fuer automatisierte Tests.
 
-Die naechsten fachlichen Schritte sind:
+Die wichtigsten Einstiegspunkte sind:
 
 1. Lokale `.env` aus `.env.example` anlegen.
 2. PostgreSQL starten und das Schema laden.
 3. Prisma-Models aus der Datenbank introspektieren.
-4. Danach die TypeScript-spezifische Anwendungslogik und Beispiele ergaenzen.
+4. Appserver oder Tests starten.
 
 ## Enthalten
 
 - Bun-, TypeScript-, ESLint- und Prettier-Konfiguration
-- Prisma-Konfiguration mit leerem Startschema
+- Hono-Appserver unter `src/app.mts` und `src/index.mts`
+- REST-Endpunkte fuer Gebrauchtwagen unter `src/rest/gebrauchtwagen-router.mts`
+- Prisma-Konfiguration und zentrale Prisma-Factory
 - Platz fuer den generierten Prisma-Client unter `src/generated/prisma`
 - PostgreSQL-Compose-Setup mit DDL und CSV-Beispieldaten
 - PlantUML-ER-Diagramm unter `docs/er-diagramm.md`
-
-## Absichtlich entfernt
-
-- das vorherige Beispielaggregat aus Schema und Skripten
-- die dazugehoerigen SQL- und Compose-Dateien
-- die lokale `.env`
+- Vitest-Tests fuer Query-Helfer und REST-Integration
 
 ## ER-Diagramm
 
@@ -106,4 +103,25 @@ Beide Beispiele koennen auch als ausfuehrbare Dateien gebaut werden:
 ```powershell
 bun run build
 bun run build:write
+```
+
+## Appserver starten
+
+```powershell
+bun run dev
+```
+
+Der Server laeuft standardmaessig auf `http://localhost:3000`. Ein einfacher
+Health-Checks sind unter `/health`, `/health/liveness` und
+`/health/readiness` verfuegbar, die REST-Routen liegen unter
+`/api/gebrauchtwagen`. Beim Start und bei Requests schreibt der Appserver
+Pino-Logs auf die Konsole.
+
+## Qualitaetssicherung
+
+```powershell
+bun run tsc
+bun run eslint
+bun run prettier:check
+bun run test
 ```
