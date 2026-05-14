@@ -41,7 +41,10 @@ if (!existsSync(executable)) {
     }
 
     console.log(`script=${executable}`);
-    const child = spawn(executable, args, { shell: isWindows, stdio: 'inherit' });
+    const child = spawn(executable, args, {
+        shell: isWindows,
+        stdio: 'inherit',
+    });
     child.on('exit', (code) => {
         process.exitCode = code ?? 1;
     });

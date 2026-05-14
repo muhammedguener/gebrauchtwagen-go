@@ -18,7 +18,7 @@ Die wichtigsten Einstiegspunkte sind:
 
 ## Enthalten
 
-- Bun-, TypeScript-, ESLint- und Prettier-Konfiguration
+- Bun-, TypeScript-, ESLint- und Oxfmt-Konfiguration
 - Hono-Appserver unter `src/app.mts` und `src/index.mts`
 - REST-Endpunkte fuer Gebrauchtwagen unter `src/rest/gebrauchtwagen-router.mts`
 - Prisma-Konfiguration und zentrale Prisma-Factory
@@ -125,7 +125,7 @@ Pino-Logs auf die Konsole.
 ```powershell
 bun run tsc
 bun run eslint
-bun run prettier:check
+bun run fmt:check
 bun run test
 ```
 
@@ -141,6 +141,8 @@ Weitere vorbereitete Scripts:
 | Script                 | Zweck                                                        |
 | ---------------------- | ------------------------------------------------------------ |
 | `bun run prisma:generate` | Prisma Client generieren; wird auch in CI verwendet       |
+| `bun run fmt`          | Quelltexte mit `oxfmt` formatieren                           |
+| `bun run fmt:check`    | Formatierung mit `oxfmt` pruefen; wird auch in CI verwendet  |
 | `bun run asciidoctor`  | Projekthandbuch bauen, sobald Issue #14 die Quelle anlegt    |
 | `bun run k6`           | Lasttest aus `test\lasttest\script.ts` fuer Issue #13        |
 | `bun run sonar`        | Lokalen Sonar Scanner starten, falls installiert             |
