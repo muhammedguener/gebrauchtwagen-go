@@ -3,55 +3,43 @@ import { compress } from 'hono/compress';
 import { cors } from 'hono/cors';
 import { createMiddleware } from 'hono/factory';
 import { secureHeaders } from 'hono/secure-headers';
+import { router as healthRouter } from './admin/health-router.mts';
+import { corsOptions } from './config/cors.mts';
+import { paths } from './config/paths.mts';
+import { getLogger } from './logger/logger.mts';
+import { requestLogger } from './logger/request-logger.mts';
+import { responseTime } from './logger/response-time.mts';
 import { gebrauchtwagenRouter } from './rest/gebrauchtwagen-router.mts';
 
 const notFoundStatus = 404;
 const internalServerErrorStatus = 500;
 const okStatus = 200;
 
-const corsOptions = {
-    origin: [
-        'http://localhost:3000',
-        'http://localhost:4200',
-        'http://localhost:5173',
-        'https://localhost:4200',
-        'https://localhost:5173',
-    ],
-    allowMethods: ['DELETE', 'GET', 'HEAD', 'POST', 'PUT'],
-    allowHeaders: [
-        'Accept',
-        'Authorization',
-        'Content-Type',
-        'If-Match',
-        'If-None-Match',
-        'Origin',
-    ],
-    exposeHeaders: [
-        'Content-Type',
-        'ETag',
-        'Location',
-        'Strict-Transport-Security',
-        'X-Content-Type-Options',
-    ],
-    maxAge: 86_400,
-};
+const logger = getLogger('app', 'file');
 
-const responseTime = createMiddleware(async (context, next) => {
-    const start = Date.now();
+const additionalSecurityHeaders = createMiddleware(async (context, next) => {
+    context.header('X-Content-Type-Options', 'nosniff');
+    context.header('X-Frame-Options', 'SAMEORIGIN');
     await next();
-    context.header('X-Response-Time', `${Date.now() - start}ms`);
 });
 
 export const createApp = (): Hono => {
     const app = new Hono();
 
-    app.use(secureHeaders(), cors(corsOptions), compress(), responseTime);
+    app.use(
+        secureHeaders(),
+        cors(corsOptions),
+        additionalSecurityHeaders,
+        compress(),
+        responseTime,
+        requestLogger,
+    );
 
-    app.get('/', (context) =>
+    app.get(paths.root, (context) =>
         context.json({ app: 'gebrauchtwagen', status: 'up' }, okStatus),
     );
-    app.get('/health', (context) => context.json({ status: 'ok' }, okStatus));
-    app.route('/api/gebrauchtwagen', gebrauchtwagenRouter);
+    app.route(paths.health, healthRouter);
+    app.route(paths.rest, gebrauchtwagenRouter);
 
     app.notFound((context) =>
         context.json(
@@ -64,7 +52,7 @@ export const createApp = (): Hono => {
     );
 
     app.onError((err, context) => {
-        console.error(err);
+        logger.error(err, 'Interner Fehler');
 
         return context.json(
             {

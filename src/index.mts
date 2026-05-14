@@ -1,11 +1,12 @@
 import { serve } from '@hono/node-server';
 import { createApp } from './app.mts';
+import { serverConfig } from './config/server.mts';
+import { banner } from './logger/banner.mts';
 
-const defaultPort = 3000;
-const port = Number(process.env['PORT'] ?? defaultPort);
+const { port } = serverConfig;
 const app = createApp();
 
-console.log(`Server läuft auf http://localhost:${port}`);
+banner();
 
 serve({
     fetch: app.fetch,

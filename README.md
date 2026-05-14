@@ -112,8 +112,10 @@ bun run dev
 ```
 
 Der Server laeuft standardmaessig auf `http://localhost:3000`. Ein einfacher
-Health-Check ist unter `/health` verfuegbar, die REST-Routen liegen unter
-`/api/gebrauchtwagen`.
+Health-Checks sind unter `/health`, `/health/liveness` und
+`/health/readiness` verfuegbar, die REST-Routen liegen unter
+`/api/gebrauchtwagen`. Beim Start und bei Requests schreibt der Appserver
+Pino-Logs auf die Konsole.
 
 ## Qualitaetssicherung
 

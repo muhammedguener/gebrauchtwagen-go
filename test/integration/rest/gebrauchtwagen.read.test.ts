@@ -52,6 +52,14 @@ const getBaseUrl = (): string => {
 };
 
 describe('REST GET /api/gebrauchtwagen', () => {
+    test('liefert den Health-Status', async () => {
+        const response = await fetch(`${getBaseUrl()}/health/liveness`);
+        const body = (await response.json()) as { status: string };
+
+        expect(response.status).toBe(200);
+        expect(body.status).toBe('up');
+    });
+
     test('liefert eine lesbare Liste (Erfolgsfall)', async () => {
         const response = await fetch(
             `${getBaseUrl()}/api/gebrauchtwagen?page=1&size=2`,
