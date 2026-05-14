@@ -23,7 +23,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Generate Prisma client
-        run: bun prisma generate
+        run: bun run prisma:generate
         env:
           DATABASE_URL: postgresql://gebrauchtwagen:gebrauchtwagen@localhost:5432/gebrauchtwagen?schema=gebrauchtwagen
 

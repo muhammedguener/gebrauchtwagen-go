@@ -128,3 +128,21 @@ bun run eslint
 bun run prettier:check
 bun run test
 ```
+
+Die lokale Sammelpruefung verwendet dieselben Einstiegspunkte wie GitHub
+Actions:
+
+```powershell
+bun run check
+```
+
+Weitere vorbereitete Scripts:
+
+| Script                 | Zweck                                                        |
+| ---------------------- | ------------------------------------------------------------ |
+| `bun run prisma:generate` | Prisma Client generieren; wird auch in CI verwendet       |
+| `bun run asciidoctor`  | Projekthandbuch bauen, sobald Issue #14 die Quelle anlegt    |
+| `bun run k6`           | Lasttest aus `test\lasttest\script.ts` fuer Issue #13        |
+| `bun run sonar`        | Lokalen Sonar Scanner starten, falls installiert             |
+| `bun run dependency-check` | OWASP Dependency Check vorbereiten; Details in Issue #17 |
+| `bun run audit`        | Produktionsabhaengigkeiten mit Bun pruefen                   |

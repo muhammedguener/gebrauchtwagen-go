@@ -36,6 +36,10 @@
   "scripts": {
     "start": "bun src/index.mts",
     "test": "vitest",
+    "asciidoctor": "bun scripts/asciidoctor.mts",
+    "audit": "bun audit --prod",
+    "check": "bun run prisma:generate && bun run tsc && bun run eslint && bun run prettier:check && bun run test",
+    "dependency-check": "bun scripts/dependency-check.mts",
     "prisma:generate": "bun x prisma generate",
     "build": "bun build --compile --sourcemap ./src/beispiele.mts",
     "build:write": "bun build --compile --sourcemap ./src/beispiele-write.mts",
@@ -45,6 +49,7 @@
     "leasot": "leasot --exit-nicely src/**/*.mts",
     "prettier": "prettier -w \"src/**/*.mts\" \"test/**/*.ts\" \"package.json\" \"prettier.config.mjs\" \".github/**/*.yml\"",
     "prettier:check": "prettier --cache --check \"src/**/*.mts\" \"test/**/*.ts\" \"package.json\" \"prettier.config.mjs\" \".github/**/*.yml\"",
+    "sonar": "bun scripts/sonar-scanner.mts",
     "tsc": "tsc --pretty",
     "tsgo": "tsgo --stableTypeOrdering"
   },
