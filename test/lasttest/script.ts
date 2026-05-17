@@ -8,6 +8,7 @@ const baseUrl = (__ENV['BASE_URL'] ?? 'http://127.0.0.1:3000').replace(
 );
 const restPath = __ENV['REST_PATH'] ?? '/api/gebrauchtwagen';
 const graphqlPath = __ENV['GRAPHQL_PATH'] ?? '/graphql';
+const healthPath = __ENV['HEALTH_PATH'] ?? '/health/liveness';
 const enableGraphql =
     (__ENV['ENABLE_GRAPHQL'] ?? 'false').toLowerCase() === 'true';
 const pauseSeconds = Number(__ENV['PAUSE_SECONDS'] ?? '0.4');
@@ -57,6 +58,26 @@ export const options: Options = {
         checks: [thresholdChecks],
     },
 };
+
+export function setup(): void {
+    const healthResponse = http.get(`${baseUrl}${healthPath}`, {
+        tags: { endpoint: 'health' },
+        headers: {
+            Accept: 'application/json',
+        },
+    });
+
+    const isHealthy = check(healthResponse, {
+        'Healthcheck vor Lasttest: Status 200': (response) =>
+            response.status === 200,
+    });
+
+    if (!isHealthy) {
+        throw new Error(
+            `App nicht bereit fuer Lasttest: ${baseUrl}${healthPath}`,
+        );
+    }
+}
 
 export function restReadScenario(): void {
     const listResponse = http.get(`${baseUrl}${restPath}?page=1&size=10`, {
