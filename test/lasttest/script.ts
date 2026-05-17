@@ -52,6 +52,7 @@ if (enableGraphql) {
 
 export const options: Options = {
     scenarios,
+    summaryTrendStats: ['avg', 'min', 'med', 'p(90)', 'p(95)', 'max'],
     thresholds: {
         http_req_failed: [thresholdFailedRate],
         http_req_duration: [thresholdP95, thresholdAvg],
