@@ -28,7 +28,10 @@ const scenarios: NonNullable<Options['scenarios']> = {
         exec: 'restReadScenario',
         executor: 'ramping-vus',
         stages: [
-            { duration: restRampUpDuration, target: Math.max(1, Math.floor(restMaxVus / 2)) },
+            {
+                duration: restRampUpDuration,
+                target: Math.max(1, Math.floor(restMaxVus / 2)),
+            },
             { duration: restHoldDuration, target: restMaxVus },
             { duration: '20s', target: 0 },
         ],
@@ -42,7 +45,10 @@ if (enableGraphql) {
         executor: 'ramping-vus',
         startTime: '10s',
         stages: [
-            { duration: graphqlRampUpDuration, target: Math.max(1, Math.floor(graphqlMaxVus / 2)) },
+            {
+                duration: graphqlRampUpDuration,
+                target: Math.max(1, Math.floor(graphqlMaxVus / 2)),
+            },
             { duration: graphqlHoldDuration, target: graphqlMaxVus },
             { duration: '20s', target: 0 },
         ],
