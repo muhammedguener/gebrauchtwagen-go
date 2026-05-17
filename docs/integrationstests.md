@@ -11,6 +11,36 @@ $env:Path += ";C:\Users\muham\.bun\bin"
 bun x vitest --run
 ```
 
+## k6-Lasttests (Ticket 13)
+
+Das Lasttest-Skript liegt unter `test/lasttest/script.ts` und belastet
+REST-Lesezugriffe. Ein zusaetzliches GraphQL-Szenario ist enthalten und kann
+bei verfuegbarem GraphQL-Endpunkt aktiviert werden.
+
+```powershell
+cd C:\Projekt3\hono
+$env:Path += ";C:\Users\muham\.bun\bin"
+bun run k6
+```
+
+Optional mit GraphQL-Szenario:
+
+```powershell
+$env:ENABLE_GRAPHQL = "true"
+$env:GRAPHQL_PATH = "/graphql"
+bun run k6
+```
+
+Optional mit angepasster Testdauer und Lastprofil:
+
+```powershell
+$env:REST_RAMP_UP_DURATION = "10s"
+$env:REST_HOLD_DURATION = "20s"
+$env:REST_MAX_VUS = "8"
+$env:THRESHOLD_P95 = "p(95)<1500"
+bun run k6
+```
+
 ## Teststruktur
 
 - REST-Tests liegen unter `test/integration/rest`
