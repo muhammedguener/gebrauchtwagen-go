@@ -41,6 +41,16 @@ $env:THRESHOLD_P95 = "p(95)<1500"
 bun run k6
 ```
 
+Schneller Smoke-Run (kurz, lokal):
+
+```powershell
+$env:REST_RAMP_UP_DURATION = "5s"
+$env:REST_HOLD_DURATION = "10s"
+$env:REST_MAX_VUS = "3"
+$env:HEALTH_PATH = "/health/liveness"
+bun run k6
+```
+
 ## Teststruktur
 
 - REST-Tests liegen unter `test/integration/rest`
