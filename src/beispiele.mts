@@ -21,10 +21,7 @@
 import process from 'node:process';
 import { styleText } from 'node:util';
 import { ZodError } from 'zod';
-import {
-    type Gebrauchtwagen,
-    type Prisma,
-} from './generated/prisma/client.ts';
+import { type Gebrauchtwagen } from './generated/prisma/client.ts';
 import {
     createPrismaClient,
     registerPrismaQueryLogger,
@@ -69,30 +66,28 @@ try {
         });
     printResult('gebrauchtwagenById', gebrauchtwagenById);
 
-    const byMarkeUndModell =
-        await prisma.gebrauchtwagen.findMany({
-            ...buildFindManyArgs(
-                parseGebrauchtwagenSearchParams({
-                    marke: 'VW',
-                    modell: 'golf',
-                    page: 1,
-                    size: 10,
-                }),
-            ),
-        });
+    const byMarkeUndModell = await prisma.gebrauchtwagen.findMany({
+        ...buildFindManyArgs(
+            parseGebrauchtwagenSearchParams({
+                marke: 'VW',
+                modell: 'golf',
+                page: 1,
+                size: 10,
+            }),
+        ),
+    });
     printResult('byMarkeUndModell', byMarkeUndModell);
 
-    const byFahrzeugklasseUndKraftstoff =
-        await prisma.gebrauchtwagen.findMany({
-            ...buildFindManyArgs(
-                parseGebrauchtwagenSearchParams({
-                    fahrzeugklasse: 'KOMPAKTKLASSE',
-                    kraftstoffart: 'BENZIN',
-                    page: 1,
-                    size: 10,
-                }),
-            ),
-        });
+    const byFahrzeugklasseUndKraftstoff = await prisma.gebrauchtwagen.findMany({
+        ...buildFindManyArgs(
+            parseGebrauchtwagenSearchParams({
+                fahrzeugklasse: 'KOMPAKTKLASSE',
+                kraftstoffart: 'BENZIN',
+                page: 1,
+                size: 10,
+            }),
+        ),
+    });
     printResult('byFahrzeugklasseUndKraftstoff', byFahrzeugklasseUndKraftstoff);
 
     const bySchadenfrei = await prisma.gebrauchtwagen.findMany({
@@ -106,50 +101,53 @@ try {
     });
     printResult('bySchadenfrei', bySchadenfrei);
 
-    const kombiniert =
-        await prisma.gebrauchtwagen.findMany({
-            ...buildFindManyArgs(
-                parseGebrauchtwagenSearchParams({
-                    marke: 'V',
-                    fahrzeugklasse: 'KOMPAKTKLASSE',
-                    schadenfrei: false,
-                    page: 1,
-                    size: 10,
-                }),
-            ),
-        });
+    const kombiniert = await prisma.gebrauchtwagen.findMany({
+        ...buildFindManyArgs(
+            parseGebrauchtwagenSearchParams({
+                marke: 'V',
+                fahrzeugklasse: 'KOMPAKTKLASSE',
+                schadenfrei: false,
+                page: 1,
+                size: 10,
+            }),
+        ),
+    });
     printResult('kombiniert', kombiniert);
 
-    const page1: Gebrauchtwagen[] =
-        await prisma.gebrauchtwagen.findMany({
-            ...buildFindManyArgs(
-                parseGebrauchtwagenSearchParams({
-                    page: 1,
-                    size: 3,
-                }),
-            ),
-        });
-    const page2: Gebrauchtwagen[] =
-        await prisma.gebrauchtwagen.findMany({
-            ...buildFindManyArgs(
-                parseGebrauchtwagenSearchParams({
-                    page: 2,
-                    size: 3,
-                }),
-            ),
-        });
-    printResult('page1', page1.map((fahrzeug) => fahrzeug.id));
-    printResult('page2', page2.map((fahrzeug) => fahrzeug.id));
+    const page1: Gebrauchtwagen[] = await prisma.gebrauchtwagen.findMany({
+        ...buildFindManyArgs(
+            parseGebrauchtwagenSearchParams({
+                page: 1,
+                size: 3,
+            }),
+        ),
+    });
+    const page2: Gebrauchtwagen[] = await prisma.gebrauchtwagen.findMany({
+        ...buildFindManyArgs(
+            parseGebrauchtwagenSearchParams({
+                page: 2,
+                size: 3,
+            }),
+        ),
+    });
+    printResult(
+        'page1',
+        page1.map((fahrzeug) => fahrzeug.id),
+    );
+    printResult(
+        'page2',
+        page2.map((fahrzeug) => fahrzeug.id),
+    );
 
     try {
         parseGebrauchtwagenSearchParams({
             kraftstoffart: 'STROM',
         });
-    } catch (error: unknown) {
-        if (error instanceof ZodError) {
-            printValidationError(error);
+    } catch (err: unknown) {
+        if (err instanceof ZodError) {
+            printValidationError(err);
         } else {
-            throw error;
+            throw err;
         }
     }
 } finally {

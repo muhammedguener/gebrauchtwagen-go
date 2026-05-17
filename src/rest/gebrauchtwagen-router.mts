@@ -1,17 +1,17 @@
 import { Hono } from 'hono';
 import { z, ZodError } from 'zod';
+import { parseGebrauchtwagenSearchParams } from '../gebrauchtwagen-query.mts';
 import {
-    buildPagination,
-    parseGebrauchtwagenSearchParams,
-} from '../gebrauchtwagen-query.mts';
-import {
-    createGebrauchtwagenFixture,
-    deleteGebrauchtwagenFixture,
-    findGebrauchtwagenFixtureById,
-    type GebrauchtwagenDto,
-    listGebrauchtwagenFixtures,
-    updateGebrauchtwagenFixture,
-} from '../data/gebrauchtwagen-fixtures.mts';
+    createProblemDetails,
+    forbidden,
+    notFound,
+    preconditionFailed,
+    preconditionRequired,
+    unauthorized,
+    unprocessableContent,
+} from '../problem-details.mts';
+import { createPrismaGebrauchtwagenService } from '../service/prisma-gebrauchtwagen-service.mts';
+import type { GebrauchtwagenService } from '../service/gebrauchtwagen-service.mts';
 
 const fahrzeugklasseValues = [
     'KLEINWAGEN',
@@ -33,6 +33,12 @@ const kraftstoffartValues = [
     'WASSERSTOFF',
 ] as const;
 
+const okStatus = 200;
+const createdStatus = 201;
+const noContentStatus = 204;
+const notAcceptableStatus = 406;
+const notModifiedStatus = 304;
+
 const gebrauchtwagenBodySchema = z.object({
     marke: z.string().trim().min(1),
     modell: z.string().trim().min(1),
@@ -44,40 +50,63 @@ const gebrauchtwagenBodySchema = z.object({
 
 type GebrauchtwagenBody = z.infer<typeof gebrauchtwagenBodySchema>;
 
-const parseAuthorization = (authorizationHeader: string | undefined): string | undefined => {
+const acceptsJsonOrHtml = (acceptHeader: string | undefined): boolean => {
+    const accept = acceptHeader?.toLowerCase() ?? '*/*';
+    return accept === '*/*' || /json|html/u.test(accept);
+};
+
+const createNotAcceptableResponse = (): Response =>
+    new Response(undefined, { status: notAcceptableStatus });
+
+const createEtag = (version: number): string => `W/"${version}"`;
+
+const parseEtagVersion = (etag: string | undefined): number | undefined => {
+    const match = /^W?\/?"(?<version>\d+)"$/u.exec(etag ?? '');
+    const version = match?.groups?.['version'];
+
+    return version === undefined ? undefined : Number.parseInt(version, 10);
+};
+
+const createLocation = (requestUrl: string, id: number): string => {
+    const location = new URL(requestUrl);
+    location.pathname = `${location.pathname}/${id}`;
+
+    return location.href;
+};
+
+const parseAuthorization = (
+    authorizationHeader: string | undefined,
+): string | undefined => {
     if (authorizationHeader === undefined) {
         return undefined;
     }
 
     const [scheme, token] = authorizationHeader.split(' ');
-    if (scheme?.toLowerCase() !== 'bearer' || token === undefined || token === '') {
+    if (
+        scheme?.toLowerCase() !== 'bearer' ||
+        token === undefined ||
+        token === ''
+    ) {
         return undefined;
     }
 
     return token;
 };
 
-const requireAdminAuthorization = (authorizationHeader: string | undefined): Response | undefined => {
+const requireAdminAuthorization = (
+    authorizationHeader: string | undefined,
+): Response | undefined => {
     const token = parseAuthorization(authorizationHeader);
 
     if (token === undefined) {
-        return Response.json(
-            {
-                error: 'UNAUTHORIZED',
-                message: 'Bearer-Token fehlt oder ist ungueltig',
-            },
-            { status: 401 },
+        return createProblemDetails(
+            unauthorized,
+            'Bearer-Token fehlt oder ist ungueltig',
         );
     }
 
     if (token !== 'admin-token') {
-        return Response.json(
-            {
-                error: 'FORBIDDEN',
-                message: 'Admin-Rolle erforderlich',
-            },
-            { status: 403 },
-        );
+        return createProblemDetails(forbidden, 'Admin-Rolle erforderlich');
     }
 
     return undefined;
@@ -87,191 +116,192 @@ const parseBody = async (request: Request): Promise<GebrauchtwagenBody> =>
     gebrauchtwagenBodySchema.parse(await request.json());
 
 const createValidationErrorResponse = (error: ZodError): Response =>
-    Response.json(
-        {
-            error: 'VALIDATION_ERROR',
-            details: error.issues.map((issue) => ({
-                path: issue.path.join('.'),
-                message: issue.message,
-            })),
-        },
-        { status: 400 },
+    createProblemDetails(
+        unprocessableContent,
+        error.issues.map((issue) => ({
+            path: issue.path.join('.'),
+            message: issue.message,
+        })),
     );
 
-const includesInsensitive = (value: string, query: string): boolean =>
-    value.toLowerCase().includes(query.toLowerCase());
+// eslint-disable-next-line max-lines-per-function
+export const createGebrauchtwagenRouter = (
+    service: GebrauchtwagenService = createPrismaGebrauchtwagenService(),
+): Hono => {
+    const router = new Hono();
 
-const filterGebrauchtwagen = (
-    items: GebrauchtwagenDto[],
-    search: ReturnType<typeof parseGebrauchtwagenSearchParams>,
-): GebrauchtwagenDto[] =>
-    items.filter((item) => {
-        if (search.marke !== undefined && !includesInsensitive(item.marke, search.marke)) {
-            return false;
+    router.get('/', async (context) => {
+        if (!acceptsJsonOrHtml(context.req.header('Accept'))) {
+            return createNotAcceptableResponse();
         }
 
-        if (search.modell !== undefined && !includesInsensitive(item.modell, search.modell)) {
-            return false;
-        }
+        try {
+            const query = context.req.query();
+            const countOnly = query['count-only'];
+            delete query['count-only'];
 
-        if (search.fahrzeugklasse !== undefined && item.fahrzeugklasse !== search.fahrzeugklasse) {
-            return false;
-        }
+            const search = parseGebrauchtwagenSearchParams(query);
+            const result = await service.list(search);
 
-        if (search.kraftstoffart !== undefined && item.kraftstoffart !== search.kraftstoffart) {
-            return false;
-        }
+            if (countOnly !== undefined) {
+                return context.json({ count: result.total }, okStatus);
+            }
 
-        if (search.schadenfrei !== undefined && item.schadenfrei !== search.schadenfrei) {
-            return false;
-        }
-
-        return true;
-    });
-
-export const gebrauchtwagenRouter = new Hono();
-
-gebrauchtwagenRouter.get('/', (context) => {
-    try {
-        const search = parseGebrauchtwagenSearchParams(context.req.query());
-        const filtered = filterGebrauchtwagen(listGebrauchtwagenFixtures(), search);
-        const { skip, take } = buildPagination(search);
-        const data = filtered.slice(skip, skip + take);
-
-        return context.json(
-            {
-                data,
-                page: search.page,
-                size: search.size,
-                total: filtered.length,
-            },
-            200,
-        );
-    } catch (error: unknown) {
-        if (error instanceof ZodError) {
-            return context.newResponse(createValidationErrorResponse(error).body, 400);
-        }
-
-        throw error;
-    }
-});
-
-gebrauchtwagenRouter.get('/:id', (context) => {
-    const id = Number(context.req.param('id'));
-
-    if (!Number.isInteger(id) || id <= 0) {
-        return context.json(
-            {
-                error: 'VALIDATION_ERROR',
-                message: 'id muss eine positive ganze Zahl sein',
-            },
-            400,
-        );
-    }
-
-    const item = findGebrauchtwagenFixtureById(id);
-
-    if (item === undefined) {
-        return context.json(
-            {
-                error: 'NOT_FOUND',
-                message: `Kein Gebrauchtwagen mit id=${id} gefunden`,
-            },
-            404,
-        );
-    }
-
-    return context.json(item, 200);
-});
-
-gebrauchtwagenRouter.post('/', async (context) => {
-    const authError = requireAdminAuthorization(context.req.header('authorization'));
-    if (authError !== undefined) {
-        return context.newResponse(authError.body, authError.status as 401 | 403);
-    }
-
-    try {
-        const payload = await parseBody(context.req.raw);
-        const created = createGebrauchtwagenFixture(payload);
-
-        return context.json(created, 201);
-    } catch (error: unknown) {
-        if (error instanceof ZodError) {
-            return context.newResponse(createValidationErrorResponse(error).body, 400);
-        }
-
-        throw error;
-    }
-});
-
-gebrauchtwagenRouter.put('/:id', async (context) => {
-    const authError = requireAdminAuthorization(context.req.header('authorization'));
-    if (authError !== undefined) {
-        return context.newResponse(authError.body, authError.status as 401 | 403);
-    }
-
-    const id = Number(context.req.param('id'));
-    if (!Number.isInteger(id) || id <= 0) {
-        return context.json(
-            {
-                error: 'VALIDATION_ERROR',
-                message: 'id muss eine positive ganze Zahl sein',
-            },
-            400,
-        );
-    }
-
-    try {
-        const payload = await parseBody(context.req.raw);
-        const updated = updateGebrauchtwagenFixture(id, payload);
-
-        if (updated === undefined) {
             return context.json(
                 {
-                    error: 'NOT_FOUND',
-                    message: `Kein Gebrauchtwagen mit id=${id} gefunden`,
+                    data: result.data,
+                    page: result.page,
+                    size: result.size,
+                    total: result.total,
                 },
-                404,
+                okStatus,
+            );
+        } catch (err: unknown) {
+            if (err instanceof ZodError) {
+                return createValidationErrorResponse(err);
+            }
+
+            throw err;
+        }
+    });
+
+    router.get('/:id', async (context) => {
+        if (!acceptsJsonOrHtml(context.req.header('Accept'))) {
+            return createNotAcceptableResponse();
+        }
+
+        const id = Number(context.req.param('id'));
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return createProblemDetails(
+                unprocessableContent,
+                'id muss eine positive ganze Zahl sein',
             );
         }
 
-        return context.json(updated, 200);
-    } catch (error: unknown) {
-        if (error instanceof ZodError) {
-            return context.newResponse(createValidationErrorResponse(error).body, 400);
+        const item = await service.findById(id);
+
+        if (item === undefined) {
+            return createProblemDetails(
+                notFound,
+                `Kein Gebrauchtwagen mit id=${id} gefunden`,
+            );
         }
 
-        throw error;
-    }
-});
+        const etag = createEtag(item.version);
+        if (context.req.header('If-None-Match') === etag) {
+            return context.body(null, notModifiedStatus); // eslint-disable-line unicorn/no-null
+        }
 
-gebrauchtwagenRouter.delete('/:id', (context) => {
-    const authError = requireAdminAuthorization(context.req.header('authorization'));
-    if (authError !== undefined) {
-        return context.newResponse(authError.body, authError.status as 401 | 403);
-    }
+        context.header('ETag', etag);
+        return context.json(item, okStatus);
+    });
 
-    const id = Number(context.req.param('id'));
-    if (!Number.isInteger(id) || id <= 0) {
-        return context.json(
-            {
-                error: 'VALIDATION_ERROR',
-                message: 'id muss eine positive ganze Zahl sein',
-            },
-            400,
+    router.post('/', async (context) => {
+        const authError = requireAdminAuthorization(
+            context.req.header('authorization'),
         );
-    }
+        if (authError !== undefined) {
+            return authError;
+        }
 
-    const deleted = deleteGebrauchtwagenFixture(id);
-    if (!deleted) {
-        return context.json(
-            {
-                error: 'NOT_FOUND',
-                message: `Kein Gebrauchtwagen mit id=${id} gefunden`,
-            },
-            404,
+        try {
+            const payload = await parseBody(context.req.raw);
+            const created = await service.create(payload);
+
+            context.header(
+                'Location',
+                createLocation(context.req.url, created.id),
+            );
+            return context.body(null, createdStatus); // eslint-disable-line unicorn/no-null
+        } catch (err: unknown) {
+            if (err instanceof ZodError) {
+                return createValidationErrorResponse(err);
+            }
+
+            throw err;
+        }
+    });
+
+    router.put('/:id', async (context) => {
+        const authError = requireAdminAuthorization(
+            context.req.header('authorization'),
         );
-    }
+        if (authError !== undefined) {
+            return authError;
+        }
 
-    return context.body(null, 204);
-});
+        const id = Number(context.req.param('id'));
+        if (!Number.isInteger(id) || id <= 0) {
+            return createProblemDetails(
+                unprocessableContent,
+                'id muss eine positive ganze Zahl sein',
+            );
+        }
+
+        const item = await service.findById(id);
+        if (item === undefined) {
+            return createProblemDetails(
+                notFound,
+                `Kein Gebrauchtwagen mit id=${id} gefunden`,
+            );
+        }
+
+        const version = parseEtagVersion(context.req.header('If-Match'));
+        if (version === undefined) {
+            return createProblemDetails(
+                preconditionRequired,
+                'Header "If-Match" fehlt oder ist ungueltig',
+            );
+        }
+
+        if (version !== item.version) {
+            return createProblemDetails(
+                preconditionFailed,
+                `Version ${version} ist nicht mehr aktuell`,
+            );
+        }
+
+        try {
+            const payload = await parseBody(context.req.raw);
+            const updated = await service.update(id, payload);
+            context.header('ETag', createEtag(updated?.version ?? version + 1));
+            return context.body(null, noContentStatus); // eslint-disable-line unicorn/no-null
+        } catch (err: unknown) {
+            if (err instanceof ZodError) {
+                return createValidationErrorResponse(err);
+            }
+
+            throw err;
+        }
+    });
+
+    router.delete('/:id', async (context) => {
+        const authError = requireAdminAuthorization(
+            context.req.header('authorization'),
+        );
+        if (authError !== undefined) {
+            return authError;
+        }
+
+        const id = Number(context.req.param('id'));
+        if (!Number.isInteger(id) || id <= 0) {
+            return createProblemDetails(
+                unprocessableContent,
+                'id muss eine positive ganze Zahl sein',
+            );
+        }
+
+        const deleted = await service.delete(id);
+        if (!deleted) {
+            return createProblemDetails(
+                notFound,
+                `Kein Gebrauchtwagen mit id=${id} gefunden`,
+            );
+        }
+
+        return context.body(null, noContentStatus); // eslint-disable-line unicorn/no-null
+    });
+
+    return router;
+};

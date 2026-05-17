@@ -1,34 +1,31 @@
 # gebrauchtwagen-ts
 
-Neutrale Prisma- und TypeScript-Grundlage fuer die weitere Entwicklung des
+Hono-, Prisma- und TypeScript-Appserver fuer die weitere Entwicklung des
 Aggregats `gebrauchtwagen`.
 
 ## Zweck
 
-Dieses Repository startet bewusst ohne fachliches Beispielaggregat. Es dient als
-separater Team-Startpunkt neben dem bestehenden FastAPI-Repository
-`gebrauchtwagen`.
+Dieses Repository ist der TypeScript-Appserver fuer das Aggregat
+`gebrauchtwagen`. Es kombiniert Hono fuer REST-Endpunkte, Prisma fuer den
+Datenbankzugriff und Vitest fuer automatisierte Tests.
 
-Die naechsten fachlichen Schritte sind:
+Die wichtigsten Einstiegspunkte sind:
 
 1. Lokale `.env` aus `.env.example` anlegen.
 2. PostgreSQL starten und das Schema laden.
 3. Prisma-Models aus der Datenbank introspektieren.
-4. Danach die TypeScript-spezifische Anwendungslogik und Beispiele ergaenzen.
+4. Appserver oder Tests starten.
 
 ## Enthalten
 
-- Bun-, TypeScript-, ESLint- und Prettier-Konfiguration
-- Prisma-Konfiguration mit leerem Startschema
+- Bun-, TypeScript-, ESLint- und Oxfmt-Konfiguration
+- Hono-Appserver unter `src/app.mts` und `src/index.mts`
+- REST-Endpunkte fuer Gebrauchtwagen unter `src/rest/gebrauchtwagen-router.mts`
+- Prisma-Konfiguration und zentrale Prisma-Factory
 - Platz fuer den generierten Prisma-Client unter `src/generated/prisma`
 - PostgreSQL-Compose-Setup mit DDL und CSV-Beispieldaten
 - PlantUML-ER-Diagramm unter `docs/er-diagramm.md`
-
-## Absichtlich entfernt
-
-- das vorherige Beispielaggregat aus Schema und Skripten
-- die dazugehoerigen SQL- und Compose-Dateien
-- die lokale `.env`
+- Vitest-Tests fuer Query-Helfer und REST-Integration
 
 ## ER-Diagramm
 
@@ -69,6 +66,9 @@ docker compose -f extras\compose\postgres\compose.yml up -d db
 Die zentrale Prisma-Factory fuer die App liegt in
 `src/config/prisma-client.mts`.
 Sie kapselt Adapter, Logging und den Zugriff auf `DATABASE_URL`.
+Der REST-Router ist ueber eine Service-Schnittstelle angebunden; im
+Produktivpfad verwendet `src/service/prisma-gebrauchtwagen-service.mts` diese
+Factory, waehrend die Integrationstests einen Fixture-Service injizieren.
 
 Ein einfacher Verbindungscheck gegen die Compose-DB erfolgt ueber die
 Beispielskripte:
@@ -107,3 +107,44 @@ Beide Beispiele koennen auch als ausfuehrbare Dateien gebaut werden:
 bun run build
 bun run build:write
 ```
+
+## Appserver starten
+
+```powershell
+bun run dev
+```
+
+Der Server laeuft standardmaessig auf `http://localhost:3000`. Ein einfacher
+Health-Checks sind unter `/health`, `/health/liveness` und
+`/health/readiness` verfuegbar, die REST-Routen liegen unter
+`/api/gebrauchtwagen`. Beim Start und bei Requests schreibt der Appserver
+Pino-Logs auf die Konsole.
+
+## Qualitaetssicherung
+
+```powershell
+bun run tsc
+bun run eslint
+bun run fmt:check
+bun run test
+```
+
+Die lokale Sammelpruefung verwendet dieselben Einstiegspunkte wie GitHub
+Actions:
+
+```powershell
+bun run check
+```
+
+Weitere vorbereitete Scripts:
+
+| Script                 | Zweck                                                        |
+| ---------------------- | ------------------------------------------------------------ |
+| `bun run prisma:generate` | Prisma Client generieren; wird auch in CI verwendet       |
+| `bun run fmt`          | Quelltexte mit `oxfmt` formatieren                           |
+| `bun run fmt:check`    | Formatierung mit `oxfmt` pruefen; wird auch in CI verwendet  |
+| `bun run asciidoctor`  | Projekthandbuch bauen, sobald Issue #14 die Quelle anlegt    |
+| `bun run k6`           | Lasttest aus `test\lasttest\script.ts` fuer Issue #13        |
+| `bun run sonar`        | Lokalen Sonar Scanner starten, falls installiert             |
+| `bun run dependency-check` | OWASP Dependency Check vorbereiten; Details in Issue #17 |
+| `bun run audit`        | Produktionsabhaengigkeiten mit Bun pruefen                   |

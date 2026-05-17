@@ -7,7 +7,9 @@ import { PrismaClient, type Prisma } from '../generated/prisma/client.ts';
 const getDatabaseUrl = (): string => {
     const databaseUrl = process.env['DATABASE_URL'];
     if (databaseUrl === undefined || databaseUrl.trim() === '') {
-        throw new Error('DATABASE_URL ist nicht gesetzt. Nutze z.B. bun --env-file=.env ...');
+        throw new Error(
+            'DATABASE_URL ist nicht gesetzt. Nutze z.B. bun --env-file=.env ...',
+        );
     }
 
     return databaseUrl;
@@ -23,7 +25,7 @@ const createLogConfig = (): (Prisma.LogLevel | Prisma.LogDefinition)[] => [
     'error',
 ];
 
-export const createPrismaClient = (): PrismaClient => {
+export const createPrismaClient = (): PrismaClient<'query'> => {
     const adapter = new PrismaPg({
         connectionString: getDatabaseUrl(),
     });
@@ -36,7 +38,9 @@ export const createPrismaClient = (): PrismaClient => {
     });
 };
 
-export const registerPrismaQueryLogger = (prisma: PrismaClient): void => {
+export const registerPrismaQueryLogger = (
+    prisma: PrismaClient<'query'>,
+): void => {
     prisma.$on('query', (event) => {
         const query = styleText('green', `Query: ${event.query}`);
         const duration = styleText('cyan', `Duration: ${event.duration} ms`);

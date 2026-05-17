@@ -33,7 +33,7 @@ import { configs as tseslint } from 'typescript-eslint';
 // "jiti" ist erforderlich fuer TypeScript als Sprache fuer die Konfigurationsdatei
 export default defineConfig(
     {
-        files: ['src/*.mts'],
+        files: ['src/**/*.mts'],
 
         extends: [
             // https://eslint.org/docs/latest/rules
@@ -415,7 +415,7 @@ export default defineConfig(
     // T e s t s
     // -------------------------------------------------------------------------
     {
-        files: ['test/**/*.mts'],
+        files: ['test/**/*.ts'],
 
         extends: [
             eslint.configs.recommended,
@@ -457,6 +457,13 @@ export default defineConfig(
             'vitest/prefer-importing-vitest-globals': 'off',
             'vitest/prefer-lowercase-title': 'off',
             'vitest/require-hook': 'off',
+        },
+    },
+
+    {
+        files: ['src/rest/**/*.mts'],
+        rules: {
+            'max-lines': 'off',
         },
     },
 
