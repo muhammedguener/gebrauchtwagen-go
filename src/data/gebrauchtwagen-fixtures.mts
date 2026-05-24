@@ -4,6 +4,7 @@ import type {
     GebrauchtwagenService,
     GebrauchtwagenWrite,
 } from '../service/gebrauchtwagen-service.mts';
+import { createPage, createPageable } from '../service/pageable.mts';
 
 const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
     {
@@ -187,12 +188,15 @@ export const createFixtureGebrauchtwagenService =
             );
             const { skip, take } = buildPagination(search);
 
-            return Promise.resolve({
-                data: filtered.slice(skip, skip + take),
-                page: search.page,
-                size: search.size,
-                total: filtered.length,
-            });
+            return Promise.resolve(
+                createPage(
+                    {
+                        data: filtered.slice(skip, skip + take),
+                        total: filtered.length,
+                    },
+                    createPageable(search),
+                ),
+            );
         },
 
         findById(id) {

@@ -10,6 +10,7 @@ import type {
     GebrauchtwagenService,
     GebrauchtwagenWrite,
 } from './gebrauchtwagen-service.mts';
+import { createPage, createPageable } from './pageable.mts';
 
 const initialVersion = 1;
 const finLength = 17;
@@ -41,12 +42,13 @@ export const createPrismaGebrauchtwagenService = (): GebrauchtwagenService => {
                 }),
             ]);
 
-            return {
-                data: data.map((fahrzeug) => mapGebrauchtwagen(fahrzeug)),
-                page: search.page,
-                size: search.size,
-                total,
-            };
+            return createPage(
+                {
+                    data: data.map((fahrzeug) => mapGebrauchtwagen(fahrzeug)),
+                    total,
+                },
+                createPageable(search),
+            );
         },
 
         async findById(id): Promise<GebrauchtwagenDto | undefined> {

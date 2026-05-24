@@ -68,10 +68,21 @@ Die REST-Route `/api/gebrauchtwagen` ist in kleine Hono-Module geschnitten:
 - `src/rest/create-base-url.mts` erzeugt Base-URL und Location-Header
 - `src/rest/rest-headers.mts` buendelt Accept-, ETag- und Auth-Helper
 - `src/rest/statuscode.mts` haelt REST-spezifische Statuscodes zentral
+- `src/service/gebrauchtwagen-service.mts` trennt die Service-Vertraege in
+  Read- und Write-Service; `src/service/pageable.mts` erzeugt die gemeinsamen
+  Page-/Slice-Daten fuer Listenresultate
+- `src/container.mts` haelt die Default-Services als einfache manuelle
+  Dependency-Injection-Stelle; Tests koennen weiterhin eigene Services ueber
+  `createApp()` injizieren
 
 Damit bleibt die Struktur nah an der Hono-Vorlage: Lesen und Schreiben sind
 getrennt, Validierung und Header-Helfer liegen ausserhalb der Router, und die
 fachliche REST-Funktionalitaet bleibt unveraendert.
+
+Bewusst bleibt die fachliche Gruppierung vorerst bei `src/rest` und
+`src/service`. Eine Verschiebung nach `src/gebrauchtwagen/router` und
+`src/gebrauchtwagen/service` wuerde ohne neue Funktionalitaet viele Imports
+beruehren und ist deshalb kein Bestandteil dieses Architektur-Follow-ups.
 
 ## Abgedeckte Faelle in Ticket 6
 

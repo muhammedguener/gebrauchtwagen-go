@@ -6,11 +6,16 @@ import { secureHeaders } from 'hono/secure-headers';
 import { router as healthRouter } from './admin/health-router.mts';
 import { corsOptions } from './config/cors.mts';
 import { paths } from './config/paths.mts';
+import { container } from './container.mts';
 import { getLogger } from './logger/logger.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
 import { createGebrauchtwagenRouter } from './rest/gebrauchtwagen-router.mts';
-import type { GebrauchtwagenService } from './service/gebrauchtwagen-service.mts';
+import type {
+    GebrauchtwagenReadService,
+    GebrauchtwagenService,
+    GebrauchtwagenWriteService,
+} from './service/gebrauchtwagen-service.mts';
 
 const notFoundStatus = 404;
 const internalServerErrorStatus = 500;
@@ -26,6 +31,8 @@ const additionalSecurityHeaders = createMiddleware(async (context, next) => {
 
 type AppOptions = {
     gebrauchtwagenService?: GebrauchtwagenService;
+    gebrauchtwagenReadService?: GebrauchtwagenReadService;
+    gebrauchtwagenWriteService?: GebrauchtwagenWriteService;
 };
 
 export const createApp = (options: AppOptions = {}): Hono => {
@@ -44,9 +51,18 @@ export const createApp = (options: AppOptions = {}): Hono => {
         context.json({ app: 'gebrauchtwagen', status: 'up' }, okStatus),
     );
     app.route(paths.health, healthRouter);
+    const readService =
+        options.gebrauchtwagenReadService ??
+        options.gebrauchtwagenService ??
+        container.gebrauchtwagenReadService;
+    const writeService =
+        options.gebrauchtwagenWriteService ??
+        options.gebrauchtwagenService ??
+        container.gebrauchtwagenWriteService;
+
     app.route(
         paths.rest,
-        createGebrauchtwagenRouter(options.gebrauchtwagenService),
+        createGebrauchtwagenRouter({ readService, writeService }),
     );
 
     app.notFound((context) =>

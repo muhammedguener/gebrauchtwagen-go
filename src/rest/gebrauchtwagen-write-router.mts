@@ -6,7 +6,10 @@ import {
     preconditionFailed,
     preconditionRequired,
 } from '../problem-details.mts';
-import type { GebrauchtwagenService } from '../service/gebrauchtwagen-service.mts';
+import type {
+    GebrauchtwagenReadService,
+    GebrauchtwagenWriteService,
+} from '../service/gebrauchtwagen-service.mts';
 import { createLocation } from './create-base-url.mts';
 import {
     createEtag,
@@ -22,7 +25,7 @@ import {
 } from './gebrauchtwagen-validation.mts';
 
 const createPostHandler =
-    (service: GebrauchtwagenService) => async (context: Context) => {
+    (service: GebrauchtwagenWriteService) => async (context: Context) => {
         const authError = requireAdminAuthorization(
             context.req.header('authorization'),
         );
@@ -49,7 +52,11 @@ const createPostHandler =
     };
 
 const createPutHandler =
-    (service: GebrauchtwagenService) => async (context: Context) => {
+    (
+        readService: GebrauchtwagenReadService,
+        writeService: GebrauchtwagenWriteService,
+    ) =>
+    async (context: Context) => {
         const authError = requireAdminAuthorization(
             context.req.header('authorization'),
         );
@@ -62,7 +69,7 @@ const createPutHandler =
             return createInvalidIdResponse();
         }
 
-        const item = await service.findById(id);
+        const item = await readService.findById(id);
         if (item === undefined) {
             return createProblemDetails(
                 notFound,
@@ -87,7 +94,7 @@ const createPutHandler =
 
         try {
             const payload = await parseGebrauchtwagenBody(context.req.raw);
-            const updated = await service.update(id, payload);
+            const updated = await writeService.update(id, payload);
             context.header('ETag', createEtag(updated?.version ?? version + 1));
             return context.body(null, statuscode.noContent); // eslint-disable-line unicorn/no-null
         } catch (err: unknown) {
@@ -100,7 +107,7 @@ const createPutHandler =
     };
 
 const createDeleteHandler =
-    (service: GebrauchtwagenService) => async (context: Context) => {
+    (service: GebrauchtwagenWriteService) => async (context: Context) => {
         const authError = requireAdminAuthorization(
             context.req.header('authorization'),
         );
@@ -125,13 +132,14 @@ const createDeleteHandler =
     };
 
 export const createGebrauchtwagenWriteRouter = (
-    service: GebrauchtwagenService,
+    readService: GebrauchtwagenReadService,
+    writeService: GebrauchtwagenWriteService,
 ): Hono => {
     const router = new Hono();
 
-    router.post('/', createPostHandler(service));
-    router.put('/:id', createPutHandler(service));
-    router.delete('/:id', createDeleteHandler(service));
+    router.post('/', createPostHandler(writeService));
+    router.put('/:id', createPutHandler(readService, writeService));
+    router.delete('/:id', createDeleteHandler(writeService));
 
     return router;
 };
