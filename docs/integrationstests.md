@@ -57,6 +57,22 @@ bun run k6
 - GraphQL ist fuer spaetere Tests unter `test/integration/graphql` vorbereitet
 - Gemeinsames Setup fuer Basis-URL und lokalen Server liegt in `test/integration/setup.ts`
 
+## REST-Modulstruktur
+
+Die REST-Route `/api/gebrauchtwagen` ist in kleine Hono-Module geschnitten:
+
+- `src/rest/gebrauchtwagen-router.mts` setzt die Teilrouter zusammen
+- `src/rest/gebrauchtwagen-read-router.mts` enthaelt `GET /` und `GET /:id`
+- `src/rest/gebrauchtwagen-write-router.mts` enthaelt `POST`, `PUT` und `DELETE`
+- `src/rest/gebrauchtwagen-validation.mts` buendelt Body- und ID-Validierung
+- `src/rest/create-base-url.mts` erzeugt Base-URL und Location-Header
+- `src/rest/rest-headers.mts` buendelt Accept-, ETag- und Auth-Helper
+- `src/rest/statuscode.mts` haelt REST-spezifische Statuscodes zentral
+
+Damit bleibt die Struktur nah an der Hono-Vorlage: Lesen und Schreiben sind
+getrennt, Validierung und Header-Helfer liegen ausserhalb der Router, und die
+fachliche REST-Funktionalitaet bleibt unveraendert.
+
 ## Abgedeckte Faelle in Ticket 6
 
 - REST-Lesezugriffe fuer Liste und Detail
