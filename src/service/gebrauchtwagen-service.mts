@@ -3,6 +3,7 @@ import type {
     Kraftstoffart,
 } from '../generated/prisma/client.ts';
 import type { GebrauchtwagenSearchParams } from '../gebrauchtwagen-query.mts';
+import type { Page } from './pageable.mts';
 
 export type GebrauchtwagenDto = {
     id: number;
@@ -17,16 +18,14 @@ export type GebrauchtwagenDto = {
 
 export type GebrauchtwagenWrite = Omit<GebrauchtwagenDto, 'id' | 'version'>;
 
-export type GebrauchtwagenList = {
-    data: GebrauchtwagenDto[];
-    page: number;
-    size: number;
-    total: number;
-};
+export type GebrauchtwagenList = Page<GebrauchtwagenDto>;
 
-export type GebrauchtwagenService = {
+export type GebrauchtwagenReadService = {
     list: (search: GebrauchtwagenSearchParams) => Promise<GebrauchtwagenList>;
     findById: (id: number) => Promise<GebrauchtwagenDto | undefined>;
+};
+
+export type GebrauchtwagenWriteService = {
     create: (fahrzeug: GebrauchtwagenWrite) => Promise<GebrauchtwagenDto>;
     update: (
         id: number,
@@ -34,3 +33,6 @@ export type GebrauchtwagenService = {
     ) => Promise<GebrauchtwagenDto | undefined>;
     delete: (id: number) => Promise<boolean>;
 };
+
+export type GebrauchtwagenService = GebrauchtwagenReadService &
+    GebrauchtwagenWriteService;

@@ -2,7 +2,7 @@ import { Hono, type Context } from 'hono';
 import { ZodError } from 'zod';
 import { parseGebrauchtwagenSearchParams } from '../gebrauchtwagen-query.mts';
 import { createProblemDetails, notFound } from '../problem-details.mts';
-import type { GebrauchtwagenService } from '../service/gebrauchtwagen-service.mts';
+import type { GebrauchtwagenReadService } from '../service/gebrauchtwagen-service.mts';
 import {
     acceptsJsonOrHtml,
     createEtag,
@@ -16,7 +16,7 @@ import {
 } from './gebrauchtwagen-validation.mts';
 
 const createListHandler =
-    (service: GebrauchtwagenService) => async (context: Context) => {
+    (service: GebrauchtwagenReadService) => async (context: Context) => {
         if (!acceptsJsonOrHtml(context.req.header('Accept'))) {
             return createNotAcceptableResponse();
         }
@@ -44,7 +44,7 @@ const createListHandler =
     };
 
 const createDetailHandler =
-    (service: GebrauchtwagenService) => async (context: Context) => {
+    (service: GebrauchtwagenReadService) => async (context: Context) => {
         if (!acceptsJsonOrHtml(context.req.header('Accept'))) {
             return createNotAcceptableResponse();
         }
@@ -73,7 +73,7 @@ const createDetailHandler =
     };
 
 export const createGebrauchtwagenReadRouter = (
-    service: GebrauchtwagenService,
+    service: GebrauchtwagenReadService,
 ): Hono => {
     const router = new Hono();
 
