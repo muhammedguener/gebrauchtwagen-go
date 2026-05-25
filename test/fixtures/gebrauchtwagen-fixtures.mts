@@ -1,10 +1,10 @@
-import { buildPagination } from '../gebrauchtwagen-query.mts';
+import { buildPagination } from '../../src/gebrauchtwagen-query.mts';
 import type {
     GebrauchtwagenDto,
     GebrauchtwagenService,
     GebrauchtwagenWrite,
-} from '../service/gebrauchtwagen-service.mts';
-import { createPage, createPageable } from '../service/pageable.mts';
+} from '../../src/service/gebrauchtwagen-service.mts';
+import { createPage, createPageable } from '../../src/service/pageable.mts';
 
 const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
     {

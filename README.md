@@ -27,6 +27,8 @@ Die wichtigsten Einstiegspunkte sind:
 - PostgreSQL-Compose-Setup mit DDL und CSV-Beispieldaten
 - PlantUML-ER-Diagramm unter `docs/er-diagramm.md`
 - Vitest-Tests fuer Query-Helfer, REST- und GraphQL-Integration
+- Fixture-Service fuer HTTP-Integrationstests unter `test/fixtures`
+- Prisma-Service-Unit-Tests mit `vi.mock` unter `test/service`
 
 ## ER-Diagramm
 
@@ -141,6 +143,11 @@ Actions:
 ```powershell
 bun run check
 ```
+
+Die HTTP-Integrationstests laufen bewusst gegen einen Fixture-Service, damit
+CI ohne PostgreSQL, Docker und Keycloak reproduzierbar bleibt. Der
+Prisma-Produktivpfad wird separat durch Service-Unit-Tests mit gemocktem
+Prisma-Client abgesichert.
 
 Weitere vorbereitete Scripts:
 

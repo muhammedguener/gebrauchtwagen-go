@@ -4,7 +4,7 @@ import { createApp } from '../../src/app.mts';
 import {
     createFixtureGebrauchtwagenService,
     resetGebrauchtwagenFixtures,
-} from '../../src/data/gebrauchtwagen-fixtures.mts';
+} from '../fixtures/gebrauchtwagen-fixtures.mts';
 
 type MinimalServer = {
     close: () => void;
