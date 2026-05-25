@@ -109,8 +109,25 @@ Die vollstaendige Keycloak/OIDC-Anbindung bleibt bewusst in Issue #8.
 - REST-Schreibzugriffe fuer `POST`, `PUT` und `DELETE`
 - GraphQL-Queries fuer Liste, Suche und Detail
 - GraphQL-Mutations fuer Create, Update und Delete
+- Prometheus-Metriken unter `/prometheus`
 - Erfolgs- und Fehlerfaelle (`200`, `201`, `204`, `400`, `401`, `403`, `404`)
 - Auth-Basistests fuer fehlenden Bearer-Token und fehlende Admin-Rolle
+
+## Logging und Monitoring
+
+Der Appserver nutzt Pino fuer strukturierte Logs. Das globale Log-Level kommt
+aus `LOG_LEVEL`; Request-Logs enthalten Methode und URL, Response-Time-Logs
+enthalten HTTP-Status und Dauer. Die Dauer ist zusaetzlich im Header
+`X-Response-Time` sichtbar.
+
+Prometheus-Metriken sind unter `/prometheus` abrufbar. Die Middleware
+`src/monitoring/prometheus-metrics.mts` zaehlt Requests ueber
+`http_requests_total` und misst Dauer mit
+`http_request_duration_seconds`. Der Router
+`src/monitoring/prometheus-router.mts` liefert das Prometheus-Textformat aus.
+
+Die Integrationstests rufen den Metrik-Endpunkt per Fetch API ab. Die Bruno-
+Collection fuer denselben manuellen Aufruf ist Teil von Issue #9.
 
 ## Technische Einordnung
 

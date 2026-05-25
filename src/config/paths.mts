@@ -3,4 +3,5 @@ export const paths = {
     health: '/health',
     rest: '/api/gebrauchtwagen',
     graphql: '/graphql',
+    prometheus: '/prometheus',
 } as const;

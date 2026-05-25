@@ -118,8 +118,13 @@ bun run dev
 Der Server laeuft standardmaessig auf `http://localhost:3000`. Ein einfacher
 Health-Checks sind unter `/health`, `/health/liveness` und
 `/health/readiness` verfuegbar, die REST-Routen liegen unter
-`/api/gebrauchtwagen`, GraphQL Yoga liegt unter `/graphql`. Beim Start und bei
-Requests schreibt der Appserver Pino-Logs auf die Konsole.
+`/api/gebrauchtwagen`, GraphQL Yoga liegt unter `/graphql`, Prometheus-Metriken
+unter `/prometheus`. Beim Start und bei Requests schreibt der Appserver
+Pino-Logs auf die Konsole.
+
+Das Log-Level wird ueber `LOG_LEVEL` aus `.env` gesteuert. Request-Logs
+enthalten Methode und URL, Response-Time-Logs enthalten Status und Dauer; die
+Dauer wird ausserdem als Header `X-Response-Time` gesetzt.
 
 ## Qualitaetssicherung
 

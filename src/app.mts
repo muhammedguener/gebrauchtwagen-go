@@ -11,6 +11,8 @@ import { getLogger } from './logger/logger.mts';
 import { createGraphqlApp } from './graphql/graphql-app.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
+import { trackMetrics } from './monitoring/prometheus-metrics.mts';
+import { router as prometheusRouter } from './monitoring/prometheus-router.mts';
 import { createGebrauchtwagenRouter } from './rest/gebrauchtwagen-router.mts';
 import type {
     GebrauchtwagenReadService,
@@ -44,6 +46,7 @@ export const createApp = (options: AppOptions = {}): Hono => {
         cors(corsOptions),
         additionalSecurityHeaders,
         compress(),
+        trackMetrics,
         responseTime,
         requestLogger,
     );
@@ -66,6 +69,7 @@ export const createApp = (options: AppOptions = {}): Hono => {
         createGebrauchtwagenRouter({ readService, writeService }),
     );
     app.route(paths.graphql, createGraphqlApp({ readService, writeService }));
+    app.route(paths.prometheus, prometheusRouter);
 
     app.notFound((context) =>
         context.json(
