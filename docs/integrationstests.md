@@ -55,6 +55,8 @@ bun run k6
 
 - REST-Tests liegen unter `test/integration/rest`
 - GraphQL-Tests liegen unter `test/integration/graphql`
+- Service-Unit-Tests mit Prisma-Mocks liegen unter `test/service`
+- Testdaten und der Fixture-Service liegen unter `test/fixtures`
 - Gemeinsames Setup fuer Basis-URL und lokalen Server liegt in `test/integration/setup.ts`
 - Das Test-Setup nutzt worker-spezifische Ports, damit REST- und GraphQL-Suites
   parallel laufen koennen
@@ -145,6 +147,13 @@ Die Integrationstests nutzen die Fetch API gegen eine lokal gestartete Hono-App.
 Dadurch koennen sie ohne externe Services laufen und bereits in CI oder lokal
 ausgefuehrt werden.
 
-Falls spaeter eine persistente Datenbank oder weitere Infrastruktur in CI noetig
-wird, kann die Pipeline darauf erweitert werden. Der aktuelle Stand ist bewusst
-so gehalten, dass die Tests bereits heute reproduzierbar laufen.
+Abweichung zur Hono-Vorlage: Die Vorlage nutzt Integrationstests gegen eine
+vorbereitete Testdatenbank mit DB-Reload und zusaetzlich Prisma-Mocks fuer
+Service-Unit-Tests. Dieses Projekt nutzt fuer HTTP-Integrationstests bewusst
+einen Fixture-Service, damit CI ohne PostgreSQL, Docker und Keycloak stabil
+bleibt. Der Produktivpfad bleibt davon getrennt und verwendet weiterhin den
+Prisma-Service gegen PostgreSQL.
+
+Der Prisma-Service wird separat mit `vi.mock` gegen den Prisma-Client getestet.
+Ein Dev-DB-Reload-Endpunkt fuer spaetere Bruno- oder DB-Integrationstests ist
+als Issue #35 erfasst.
