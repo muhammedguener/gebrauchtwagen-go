@@ -10,7 +10,10 @@ type MinimalServer = {
     close: () => void;
 };
 
-const port = Number(process.env['TEST_PORT'] ?? 4016);
+const workerId = Number(
+    process.env['VITEST_POOL_ID'] ?? process.env['VITEST_WORKER_ID'] ?? 0,
+);
+const port = Number(process.env['TEST_PORT'] ?? 4016) + workerId;
 const baseUrl = `http://127.0.0.1:${port}`;
 
 let server: MinimalServer | undefined;

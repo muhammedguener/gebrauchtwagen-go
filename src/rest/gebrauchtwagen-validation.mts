@@ -24,7 +24,7 @@ const kraftstoffartValues = [
     'WASSERSTOFF',
 ] as const;
 
-const gebrauchtwagenBodySchema = z.object({
+export const gebrauchtwagenBodySchema = z.object({
     marke: z.string().trim().min(1),
     modell: z.string().trim().min(1),
     fahrzeugklasse: z.enum(fahrzeugklasseValues),

@@ -6,8 +6,8 @@ Aggregats `gebrauchtwagen`.
 ## Zweck
 
 Dieses Repository ist der TypeScript-Appserver fuer das Aggregat
-`gebrauchtwagen`. Es kombiniert Hono fuer REST-Endpunkte, Prisma fuer den
-Datenbankzugriff und Vitest fuer automatisierte Tests.
+`gebrauchtwagen`. Es kombiniert Hono fuer REST- und GraphQL-Endpunkte, Prisma
+fuer den Datenbankzugriff und Vitest fuer automatisierte Tests.
 
 Die wichtigsten Einstiegspunkte sind:
 
@@ -21,11 +21,12 @@ Die wichtigsten Einstiegspunkte sind:
 - Bun-, TypeScript-, ESLint- und Oxfmt-Konfiguration
 - Hono-Appserver unter `src/app.mts` und `src/index.mts`
 - REST-Endpunkte fuer Gebrauchtwagen unter `src/rest/gebrauchtwagen-router.mts`
+- GraphQL-Yoga-Endpunkt fuer Gebrauchtwagen unter `src/graphql/graphql-app.mts`
 - Prisma-Konfiguration und zentrale Prisma-Factory
 - Platz fuer den generierten Prisma-Client unter `src/generated/prisma`
 - PostgreSQL-Compose-Setup mit DDL und CSV-Beispieldaten
 - PlantUML-ER-Diagramm unter `docs/er-diagramm.md`
-- Vitest-Tests fuer Query-Helfer und REST-Integration
+- Vitest-Tests fuer Query-Helfer, REST- und GraphQL-Integration
 
 ## ER-Diagramm
 
@@ -117,8 +118,8 @@ bun run dev
 Der Server laeuft standardmaessig auf `http://localhost:3000`. Ein einfacher
 Health-Checks sind unter `/health`, `/health/liveness` und
 `/health/readiness` verfuegbar, die REST-Routen liegen unter
-`/api/gebrauchtwagen`. Beim Start und bei Requests schreibt der Appserver
-Pino-Logs auf die Konsole.
+`/api/gebrauchtwagen`, GraphQL Yoga liegt unter `/graphql`. Beim Start und bei
+Requests schreibt der Appserver Pino-Logs auf die Konsole.
 
 ## Qualitaetssicherung
 

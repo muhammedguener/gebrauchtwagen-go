@@ -54,8 +54,10 @@ bun run k6
 ## Teststruktur
 
 - REST-Tests liegen unter `test/integration/rest`
-- GraphQL ist fuer spaetere Tests unter `test/integration/graphql` vorbereitet
+- GraphQL-Tests liegen unter `test/integration/graphql`
 - Gemeinsames Setup fuer Basis-URL und lokalen Server liegt in `test/integration/setup.ts`
+- Das Test-Setup nutzt worker-spezifische Ports, damit REST- und GraphQL-Suites
+  parallel laufen koennen
 
 ## REST-Modulstruktur
 
@@ -84,10 +86,29 @@ Bewusst bleibt die fachliche Gruppierung vorerst bei `src/rest` und
 `src/gebrauchtwagen/service` wuerde ohne neue Funktionalitaet viele Imports
 beruehren und ist deshalb kein Bestandteil dieses Architektur-Follow-ups.
 
+## GraphQL-Modulstruktur
+
+Der GraphQL-Endpunkt `/graphql` ist analog zur Hono-Vorlage in kleine Module
+geschnitten:
+
+- `src/graphql/graphql-app.mts` bindet GraphQL Yoga in Hono ein
+- `src/graphql/types.mts` definiert Schema, Eingabetypen und DTO-Mapping
+- `src/graphql/query-handler.mts` nutzt den Read-Service fuer Liste, Suche und
+  Detail
+- `src/graphql/mutation-handler.mts` nutzt den Write-Service fuer Create,
+  Update und Delete und wiederverwendet die Zod-Body-Validierung aus REST
+- `src/graphql/errors.mts` bildet Validierungs-, Auth- und Systemfehler auf
+  GraphQL-Fehlercodes ab
+
+Die Mutations verwenden derzeit die vorhandene Bearer-Admin-Basispruefung.
+Die vollstaendige Keycloak/OIDC-Anbindung bleibt bewusst in Issue #8.
+
 ## Abgedeckte Faelle in Ticket 6
 
 - REST-Lesezugriffe fuer Liste und Detail
 - REST-Schreibzugriffe fuer `POST`, `PUT` und `DELETE`
+- GraphQL-Queries fuer Liste, Suche und Detail
+- GraphQL-Mutations fuer Create, Update und Delete
 - Erfolgs- und Fehlerfaelle (`200`, `201`, `204`, `400`, `401`, `403`, `404`)
 - Auth-Basistests fuer fehlenden Bearer-Token und fehlende Admin-Rolle
 
