@@ -8,6 +8,7 @@ import { corsOptions } from './config/cors.mts';
 import { paths } from './config/paths.mts';
 import { container } from './container.mts';
 import { getLogger } from './logger/logger.mts';
+import { createGraphqlApp } from './graphql/graphql-app.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
 import { createGebrauchtwagenRouter } from './rest/gebrauchtwagen-router.mts';
@@ -64,6 +65,7 @@ export const createApp = (options: AppOptions = {}): Hono => {
         paths.rest,
         createGebrauchtwagenRouter({ readService, writeService }),
     );
+    app.route(paths.graphql, createGraphqlApp({ readService, writeService }));
 
     app.notFound((context) =>
         context.json(
