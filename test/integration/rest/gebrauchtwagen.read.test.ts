@@ -67,6 +67,18 @@ describe('REST GET /api/gebrauchtwagen', () => {
         expect(body.status).toBe('up');
     });
 
+    test('liefert Prometheus-Metriken', async () => {
+        await fetch(`${getBaseUrl()}/health/liveness`);
+
+        const response = await fetch(`${getBaseUrl()}/prometheus`);
+        const body = await response.text();
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get('Content-Type')).toContain('text/plain');
+        expect(body).toContain('http_requests_total');
+        expect(body).toContain('http_request_duration_seconds');
+    });
+
     test('liefert eine lesbare Liste (Erfolgsfall)', async () => {
         const response = await fetch(
             `${getBaseUrl()}/api/gebrauchtwagen?page=1&size=2`,
