@@ -1,0 +1,28 @@
+meta {
+  name: Delete
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "query": "mutation Delete($id: ID!) { deleteGebrauchtwagen(id: $id) { success } }",
+    "variables": {
+      "id": "{{fahrzeugId}}"
+    }
+  }
+}
