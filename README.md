@@ -154,3 +154,20 @@ Weitere vorbereitete Scripts:
 | `bun run sonar`        | Lokalen Sonar Scanner starten, falls installiert             |
 | `bun run dependency-check` | OWASP Dependency Check vorbereiten; Details in Issue #17 |
 | `bun run audit`        | Produktionsabhaengigkeiten mit Bun pruefen                   |
+
+## Bruno Collection
+
+Die Bruno Collection liegt unter `bruno/`. Fuer lokale Entwicklung wird das
+Environment `local` verwendet; es setzt `baseUrl` auf `http://localhost:3000`
+und enthaelt die aktuellen Testtokens `admin-token` und `user-token`.
+
+Typische Aufrufe sind enthalten fuer:
+
+- REST-Liste, Detail, Suche, Count-only, Create, Update, Delete und Fehlerfall
+- GraphQL-Liste, Detail, Suche, Create, Update und Delete
+- Health-Liveness, Health-Readiness und Prometheus
+- vorbereitete Requests fuer Keycloak Token und Dev-DB-Reload
+
+Keycloak/OIDC ist weiterhin durch Issue #8 abgedeckt. Der vorbereitete
+DB-Reload-Request verweist auf Issue #35, weil der passende Dev-Endpunkt noch
+nicht im Appserver vorhanden ist.

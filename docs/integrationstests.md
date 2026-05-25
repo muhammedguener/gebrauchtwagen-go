@@ -129,6 +129,16 @@ Prometheus-Metriken sind unter `/prometheus` abrufbar. Die Middleware
 Die Integrationstests rufen den Metrik-Endpunkt per Fetch API ab. Die Bruno-
 Collection fuer denselben manuellen Aufruf ist Teil von Issue #9.
 
+## Bruno Collection
+
+Die Bruno Collection liegt im Repository unter `bruno/` und nutzt das lokale
+Environment `local`. Sie deckt REST, GraphQL, Health und Prometheus ab und
+enthaelt Fehlerfaelle fuer REST-Validierung und fehlende Authentifizierung.
+
+Zwei Requests sind bewusst als vorbereitet markiert: Keycloak Token gehoert zu
+Issue #8, der Dev-DB-Reload-Endpunkt zu Issue #35. Damit bleiben nicht
+umgesetzte Backend-Features sichtbar durch Issues abgedeckt.
+
 ## Technische Einordnung
 
 Die Integrationstests nutzen die Fetch API gegen eine lokal gestartete Hono-App.

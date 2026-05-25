@@ -1,0 +1,31 @@
+meta {
+  name: Update
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/gebrauchtwagen/{{fahrzeugId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+headers {
+  Content-Type: application/json
+  If-Match: W/"{{version}}"
+}
+
+body:json {
+  {
+    "marke": "BMW",
+    "modell": "330i",
+    "fahrzeugklasse": "MITTELKLASSE",
+    "kraftstoffart": "BENZIN",
+    "schadenfrei": false,
+    "kilometerstand": 28000
+  }
+}

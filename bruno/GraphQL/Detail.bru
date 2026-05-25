@@ -1,0 +1,24 @@
+meta {
+  name: Detail
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "query": "query Fahrzeug($id: ID!) { gebrauchtwagen(id: $id) { id marke modell version } }",
+    "variables": {
+      "id": "{{fahrzeugId}}"
+    }
+  }
+}
