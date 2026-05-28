@@ -64,10 +64,10 @@
     "tar": "7.5.9"
   },
   "dependencies": {
+    "@hono/node-server": "2.0.1",
     "@prisma/adapter-pg": "7.8.0",
     "@prisma/client": "7.8.0",
     "@prisma/sqlcommenter-query-insights": "7.8.0",
-    "@hono/node-server": "2.0.1",
     "dotenv": "17.4.2",
     "figlet": "1.11.0",
     "graphql": "16.13.2",
