@@ -42,6 +42,20 @@ type AppOptions = {
     gebrauchtwagenDevService?: GebrauchtwagenDevService;
 };
 
+const routeDevEndpoints = (app: Hono, options: AppOptions): void => {
+    if (serverConfig.nodeEnv === 'production') {
+        return;
+    }
+
+    app.route(
+        paths.dev,
+        createDbReloadRouter(
+            options.gebrauchtwagenDevService ??
+                container.gebrauchtwagenDevService,
+        ),
+    );
+};
+
 export const createApp = (options: AppOptions = {}): Hono => {
     const app = new Hono();
 
@@ -68,15 +82,7 @@ export const createApp = (options: AppOptions = {}): Hono => {
         options.gebrauchtwagenService ??
         container.gebrauchtwagenWriteService;
 
-    if (serverConfig.nodeEnv !== 'production') {
-        app.route(
-            paths.dev,
-            createDbReloadRouter(
-                options.gebrauchtwagenDevService ??
-                    container.gebrauchtwagenDevService,
-            ),
-        );
-    }
+    routeDevEndpoints(app, options);
 
     app.route(
         paths.rest,

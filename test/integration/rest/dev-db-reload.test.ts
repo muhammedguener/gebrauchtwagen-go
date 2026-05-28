@@ -55,7 +55,7 @@ describe('POST /dev/db_populate', () => {
             body: JSON.stringify(validPayload),
         });
 
-        expect(await readTotal()).toBe(7);
+        await expect(readTotal()).resolves.toBe(7);
 
         const response = await fetch(`${getBaseUrl()}/dev/db_populate`, {
             method: 'POST',
@@ -67,8 +67,8 @@ describe('POST /dev/db_populate', () => {
         };
 
         expect(response.status).toBe(200);
-        expect(body).toEqual({ status: 'reloaded', count: 6 });
-        expect(await readTotal()).toBe(6);
+        expect(body).toStrictEqual({ status: 'reloaded', count: 6 });
+        await expect(readTotal()).resolves.toBe(6);
     });
 
     test('liefert 401 ohne Bearer-Token', async () => {

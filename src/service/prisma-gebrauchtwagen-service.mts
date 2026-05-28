@@ -1,8 +1,10 @@
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import path from 'node:path';
 import { Client } from 'pg';
-import { createPrismaClient } from '../config/prisma-client.mts';
-import { getDatabaseUrl } from '../config/prisma-client.mts';
+import {
+    createPrismaClient,
+    getDatabaseUrl,
+} from '../config/prisma-client.mts';
 import type { Gebrauchtwagen } from '../generated/prisma/client.ts';
 import {
     buildFindManyArgs,
@@ -19,7 +21,7 @@ import { createPage, createPageable } from './pageable.mts';
 
 const initialVersion = 1;
 const finLength = 17;
-const demoDataSqlPath = join(
+const demoDataSqlPath = path.join(
     process.cwd(),
     'extras',
     'compose',

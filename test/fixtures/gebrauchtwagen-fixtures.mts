@@ -217,13 +217,12 @@ export const createFixtureGebrauchtwagenService =
         },
     });
 
-export const createFixtureDevReloadService =
-    (): GebrauchtwagenDevService => ({
-        reloadDemoData() {
-            resetGebrauchtwagenFixtures();
+export const createFixtureDevReloadService = (): GebrauchtwagenDevService => ({
+    reloadDemoData() {
+        resetGebrauchtwagenFixtures();
 
-            return Promise.resolve({
-                count: initialGebrauchtwagenFixtures.length,
-            });
-        },
-    });
+        return Promise.resolve({
+            count: initialGebrauchtwagenFixtures.length,
+        });
+    },
+});
