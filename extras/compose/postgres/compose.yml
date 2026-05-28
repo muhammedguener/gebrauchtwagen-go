@@ -1,6 +1,35 @@
 name: gebrauchtwagen
 
 services:
+  app:
+    build:
+      context: ../../..
+      dockerfile: Dockerfile
+    image: gebrauchtwagen-ts:latest
+    container_name: gebrauchtwagen-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://gebrauchtwagen:gebrauchtwagen@db:5432/gebrauchtwagen?schema=gebrauchtwagen
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "const r = await fetch('http://127.0.0.1:3000/health/liveness'); process.exit(r.ok ? 0 : 1)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    stop_signal: SIGINT
+
   db:
     image: postgres:17
     container_name: gebrauchtwagen-db
