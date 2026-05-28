@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+node_modules
+dist
+coverage
+logs
+*.log
+src/generated
+beispiele*.exe
+beispiele*.js.map
+.scannerwork
