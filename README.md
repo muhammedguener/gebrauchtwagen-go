@@ -128,6 +128,32 @@ Das Log-Level wird ueber `LOG_LEVEL` aus `.env` gesteuert. Request-Logs
 enthalten Methode und URL, Response-Time-Logs enthalten Status und Dauer; die
 Dauer wird ausserdem als Header `X-Response-Time` gesetzt.
 
+## Docker
+
+Das App-Image kann lokal gebaut werden:
+
+```powershell
+docker build --tag gebrauchtwagen-ts:latest .
+```
+
+Die lokale Compose-Umgebung startet App und PostgreSQL gemeinsam:
+
+```powershell
+docker compose -f extras\compose\postgres\compose.yml up -d --build
+```
+
+Standardmaessig wird die App auf `http://localhost:3000` veroeffentlicht. Wenn
+Port 3000 bereits belegt ist, kann ein anderer Host-Port gesetzt werden:
+
+```powershell
+$env:APP_PORT = '3100'
+docker compose -f extras\compose\postgres\compose.yml up -d --build
+```
+
+Die App verwendet im Compose-Netzwerk `db:5432` und greift damit auf die beim
+PostgreSQL-Start geladenen CSV-Demodaten zu. Keycloak bleibt bis Issue #8
+vorbereitet, ist aber noch nicht Teil dieser Compose-Datei.
+
 ## Qualitaetssicherung
 
 ```powershell
