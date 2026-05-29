@@ -34,5 +34,9 @@ export type GebrauchtwagenWriteService = {
     delete: (id: number) => Promise<boolean>;
 };
 
+export type GebrauchtwagenDevService = {
+    reloadDemoData: () => Promise<{ count: number }>;
+};
+
 export type GebrauchtwagenService = GebrauchtwagenReadService &
     GebrauchtwagenWriteService;

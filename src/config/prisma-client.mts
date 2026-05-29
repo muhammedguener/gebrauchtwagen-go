@@ -4,7 +4,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { prismaQueryInsights } from '@prisma/sqlcommenter-query-insights';
 import { PrismaClient, type Prisma } from '../generated/prisma/client.ts';
 
-const getDatabaseUrl = (): string => {
+export const getDatabaseUrl = (): string => {
     const databaseUrl = process.env['DATABASE_URL'];
     if (databaseUrl === undefined || databaseUrl.trim() === '') {
         throw new Error(

@@ -1,10 +1,17 @@
-import { createPrismaClient } from '../config/prisma-client.mts';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { Client } from 'pg';
+import {
+    createPrismaClient,
+    getDatabaseUrl,
+} from '../config/prisma-client.mts';
 import type { Gebrauchtwagen } from '../generated/prisma/client.ts';
 import {
     buildFindManyArgs,
     buildGebrauchtwagenWhere,
 } from '../gebrauchtwagen-query.mts';
 import type {
+    GebrauchtwagenDevService,
     GebrauchtwagenDto,
     GebrauchtwagenList,
     GebrauchtwagenService,
@@ -14,6 +21,16 @@ import { createPage, createPageable } from './pageable.mts';
 
 const initialVersion = 1;
 const finLength = 17;
+const demoDataSqlPath = path.join(
+    process.cwd(),
+    'extras',
+    'compose',
+    'postgres',
+    'init',
+    'gebrauchtwagen',
+    'sql',
+    'load-csv.sql',
+);
 
 const mapGebrauchtwagen = (fahrzeug: Gebrauchtwagen): GebrauchtwagenDto => ({
     id: fahrzeug.id,
@@ -29,7 +46,8 @@ const mapGebrauchtwagen = (fahrzeug: Gebrauchtwagen): GebrauchtwagenDto => ({
 const createFin = (): string => `GW${Date.now()}`.slice(0, finLength);
 
 // eslint-disable-next-line max-lines-per-function
-export const createPrismaGebrauchtwagenService = (): GebrauchtwagenService => {
+export const createPrismaGebrauchtwagenService = (): GebrauchtwagenService &
+    GebrauchtwagenDevService => {
     const prisma = createPrismaClient();
 
     return {
@@ -111,6 +129,26 @@ export const createPrismaGebrauchtwagenService = (): GebrauchtwagenService => {
             await prisma.gebrauchtwagen.delete({ where: { id } });
 
             return true;
+        },
+
+        async reloadDemoData(): Promise<{ count: number }> {
+            const sql = await readFile(demoDataSqlPath, 'utf8');
+            const client = new Client({
+                connectionString: getDatabaseUrl(),
+            });
+
+            await client.connect();
+            try {
+                await client.query(sql);
+                const result = await client.query<{ count: string }>(
+                    'SELECT count(*) AS count FROM gebrauchtwagen.gebrauchtwagen',
+                );
+                const count = Number(result.rows[0]?.count ?? 0);
+
+                return { count };
+            } finally {
+                await client.end();
+            }
         },
     };
 };

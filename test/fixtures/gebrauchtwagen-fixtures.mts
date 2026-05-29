@@ -1,5 +1,6 @@
 import { buildPagination } from '../../src/gebrauchtwagen-query.mts';
 import type {
+    GebrauchtwagenDevService,
     GebrauchtwagenDto,
     GebrauchtwagenService,
     GebrauchtwagenWrite,
@@ -215,3 +216,13 @@ export const createFixtureGebrauchtwagenService =
             return Promise.resolve(deleteGebrauchtwagenFixture(id));
         },
     });
+
+export const createFixtureDevReloadService = (): GebrauchtwagenDevService => ({
+    reloadDemoData() {
+        resetGebrauchtwagenFixtures();
+
+        return Promise.resolve({
+            count: initialGebrauchtwagenFixtures.length,
+        });
+    },
+});

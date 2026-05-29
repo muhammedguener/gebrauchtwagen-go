@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server';
 import { afterAll, beforeAll, beforeEach } from 'vitest';
 import { createApp } from '../../src/app.mts';
 import {
+    createFixtureDevReloadService,
     createFixtureGebrauchtwagenService,
     resetGebrauchtwagenFixtures,
 } from '../fixtures/gebrauchtwagen-fixtures.mts';
@@ -21,6 +22,7 @@ let server: MinimalServer | undefined;
 beforeAll(() => {
     process.env['TEST_BASE_URL'] = baseUrl;
     const app = createApp({
+        gebrauchtwagenDevService: createFixtureDevReloadService(),
         gebrauchtwagenService: createFixtureGebrauchtwagenService(),
     });
     server = serve({ fetch: app.fetch, port }) as MinimalServer;
