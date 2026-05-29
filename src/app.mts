@@ -5,12 +5,23 @@ import { createMiddleware } from 'hono/factory';
 import { secureHeaders } from 'hono/secure-headers';
 import { router as healthRouter } from './admin/health-router.mts';
 import { corsOptions } from './config/cors.mts';
+import { serverConfig } from './config/server.mts';
 import { paths } from './config/paths.mts';
+import { container } from './container.mts';
+import { createDbReloadRouter } from './dev/db-reload-router.mts';
 import { getLogger } from './logger/logger.mts';
+import { createGraphqlApp } from './graphql/graphql-app.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
+import { trackMetrics } from './monitoring/prometheus-metrics.mts';
+import { router as prometheusRouter } from './monitoring/prometheus-router.mts';
 import { createGebrauchtwagenRouter } from './rest/gebrauchtwagen-router.mts';
-import type { GebrauchtwagenService } from './service/gebrauchtwagen-service.mts';
+import type {
+    GebrauchtwagenDevService,
+    GebrauchtwagenReadService,
+    GebrauchtwagenService,
+    GebrauchtwagenWriteService,
+} from './service/gebrauchtwagen-service.mts';
 
 const notFoundStatus = 404;
 const internalServerErrorStatus = 500;
@@ -26,6 +37,23 @@ const additionalSecurityHeaders = createMiddleware(async (context, next) => {
 
 type AppOptions = {
     gebrauchtwagenService?: GebrauchtwagenService;
+    gebrauchtwagenReadService?: GebrauchtwagenReadService;
+    gebrauchtwagenWriteService?: GebrauchtwagenWriteService;
+    gebrauchtwagenDevService?: GebrauchtwagenDevService;
+};
+
+const routeDevEndpoints = (app: Hono, options: AppOptions): void => {
+    if (serverConfig.nodeEnv === 'production') {
+        return;
+    }
+
+    app.route(
+        paths.dev,
+        createDbReloadRouter(
+            options.gebrauchtwagenDevService ??
+                container.gebrauchtwagenDevService,
+        ),
+    );
 };
 
 export const createApp = (options: AppOptions = {}): Hono => {
@@ -36,6 +64,7 @@ export const createApp = (options: AppOptions = {}): Hono => {
         cors(corsOptions),
         additionalSecurityHeaders,
         compress(),
+        trackMetrics,
         responseTime,
         requestLogger,
     );
@@ -44,10 +73,23 @@ export const createApp = (options: AppOptions = {}): Hono => {
         context.json({ app: 'gebrauchtwagen', status: 'up' }, okStatus),
     );
     app.route(paths.health, healthRouter);
+    const readService =
+        options.gebrauchtwagenReadService ??
+        options.gebrauchtwagenService ??
+        container.gebrauchtwagenReadService;
+    const writeService =
+        options.gebrauchtwagenWriteService ??
+        options.gebrauchtwagenService ??
+        container.gebrauchtwagenWriteService;
+
+    routeDevEndpoints(app, options);
+
     app.route(
         paths.rest,
-        createGebrauchtwagenRouter(options.gebrauchtwagenService),
+        createGebrauchtwagenRouter({ readService, writeService }),
     );
+    app.route(paths.graphql, createGraphqlApp({ readService, writeService }));
+    app.route(paths.prometheus, prometheusRouter);
 
     app.notFound((context) =>
         context.json(

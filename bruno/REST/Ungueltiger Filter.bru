@@ -1,0 +1,15 @@
+meta {
+  name: Ungueltiger Filter
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/gebrauchtwagen?kraftstoffart=STROM
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}

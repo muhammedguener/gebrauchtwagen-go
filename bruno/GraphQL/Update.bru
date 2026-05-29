@@ -1,0 +1,37 @@
+meta {
+  name: Update
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "query": "mutation Update($id: ID!, $version: Int!, $input: GebrauchtwagenInput!) { updateGebrauchtwagen(id: $id, version: $version, input: $input) { version } }",
+    "variables": {
+      "id": "{{fahrzeugId}}",
+      "version": 1,
+      "input": {
+        "marke": "BMW",
+        "modell": "330i",
+        "fahrzeugklasse": "MITTELKLASSE",
+        "kraftstoffart": "BENZIN",
+        "schadenfrei": false,
+        "kilometerstand": 28000
+      }
+    }
+  }
+}

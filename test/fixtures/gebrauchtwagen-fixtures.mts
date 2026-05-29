@@ -1,9 +1,11 @@
-import { buildPagination } from '../gebrauchtwagen-query.mts';
+import { buildPagination } from '../../src/gebrauchtwagen-query.mts';
 import type {
+    GebrauchtwagenDevService,
     GebrauchtwagenDto,
     GebrauchtwagenService,
     GebrauchtwagenWrite,
-} from '../service/gebrauchtwagen-service.mts';
+} from '../../src/service/gebrauchtwagen-service.mts';
+import { createPage, createPageable } from '../../src/service/pageable.mts';
 
 const initialGebrauchtwagenFixtures: GebrauchtwagenDto[] = [
     {
@@ -187,12 +189,15 @@ export const createFixtureGebrauchtwagenService =
             );
             const { skip, take } = buildPagination(search);
 
-            return Promise.resolve({
-                data: filtered.slice(skip, skip + take),
-                page: search.page,
-                size: search.size,
-                total: filtered.length,
-            });
+            return Promise.resolve(
+                createPage(
+                    {
+                        data: filtered.slice(skip, skip + take),
+                        total: filtered.length,
+                    },
+                    createPageable(search),
+                ),
+            );
         },
 
         findById(id) {
@@ -211,3 +216,13 @@ export const createFixtureGebrauchtwagenService =
             return Promise.resolve(deleteGebrauchtwagenFixture(id));
         },
     });
+
+export const createFixtureDevReloadService = (): GebrauchtwagenDevService => ({
+    reloadDemoData() {
+        resetGebrauchtwagenFixtures();
+
+        return Promise.resolve({
+            count: initialGebrauchtwagenFixtures.length,
+        });
+    },
+});

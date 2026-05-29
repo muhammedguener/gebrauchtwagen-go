@@ -1,0 +1,21 @@
+meta {
+  name: Suche
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "query": "query Suche { gebrauchtwagenListe(input: { fahrzeugklasse: MITTELKLASSE, kraftstoffart: ELEKTRO, schadenfrei: true }) { data { id marke modell } } }"
+  }
+}

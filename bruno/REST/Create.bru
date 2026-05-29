@@ -1,0 +1,30 @@
+meta {
+  name: Create
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/gebrauchtwagen
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "marke": "BMW",
+    "modell": "320i",
+    "fahrzeugklasse": "MITTELKLASSE",
+    "kraftstoffart": "BENZIN",
+    "schadenfrei": true,
+    "kilometerstand": 27000
+  }
+}

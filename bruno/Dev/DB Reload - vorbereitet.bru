@@ -1,0 +1,20 @@
+meta {
+  name: DB Reload - vorbereitet
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/dev/db_populate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+docs {
+  Setzt die lokale Demo-Datenbank ueber den Dev-Endpunkt zurueck.
+  Erwartet den lokalen Admin-Testtoken aus dem Environment.
+}
