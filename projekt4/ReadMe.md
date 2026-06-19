@@ -1,71 +1,27 @@
-# Programmierworkshop am 19.6.2026
+# Projekt: Gebrauchtwagen‑Prototyp
 
-## Namen
-Muhammed Güner
+**Autor:** Muhammed Güner — Matrikel: 86352
 
-## Matrikelnummer
-86352
+**Repository:** https://github.com/muhammedguener/gebrauchtwagen-go
 
-## Link zum Git-Repository
-https://github.com/muhammedguener/gebrauchtwagen-go
+Kurz: kleiner Go‑Prototyp mit REST‑Endpunkten zum Verwalten von Gebrauchtwagen. Ziel: einfache Nachvollziehbarkeit für die Abgabe (Code, Migrationen, Run‑Skripte, Logs).
 
-## Kontakt für Abgabe
-Email: muhammed.guener1453@gmail.com
+## Inhalt / Wichtigste Pfade
 
-## KI-Werkzeuge
-Chat Gpt, CoPilot
-### Agenten
-
-### Chat-URLs, z.B. https://chatgpt.com
-
-## Frameworks und Bibliotheken
-Verwendete Bibliotheken / Frameworks:
-
-- `net/http` (Standard‑HTTP‑Server, Fallback)
-- `github.com/go-chi/chi/v5` (Router für Endpunkte)
-- `github.com/jmoiron/sqlx` (leichte DB‑Abstraktion)
-- `github.com/lib/pq` (Postgres Driver)
-
-Implementierte Funktionalität (Kurzüberblick):
-
-- REST: `GET /cars` und `POST /cars` (in‑memory fallback oder Postgres‑Persistence)
-- Healthcheck: `GET /health` für Readiness
-- DB‑Layer: `proto-go/db.go` mit `ConnectDB()`, `InitSchema()`, `ListCarsDB()` und `CreateCarDB()` (SQL‑Migration existiert)
-- Migration: `migrations/001_create_gebrauchtwagen.sql` (CREATE TABLE)
-- Docker: `docker-compose.yml` (Postgres + App container) und Smoke‑Tests (`smoke_test.sh`, `db_smoke_test.sh`)
-- CI: GitHub Actions Workflow `/.github/workflows/ci.yml` (build & test)
-- Beispiel‑Daten: `proto-go/data/sample.csv`
-
-Wichtige Dateien im Paket:
-
-- `proto-go/main.go` — HTTP‑Server und Router (chi)
-- `proto-go/db.go` — DB‑Zugriff mit `sqlx`
-- `proto-go/go.mod` — Module + Abhängigkeiten
-- `proto-go/docker-compose.yml` — lokale Demo mit Postgres
-- `proto-go/migrations/001_create_gebrauchtwagen.sql`
-- `proto-go/run.sh` / `proto-go/run.ps1` — lokale Run‑Skripte
-- `proto-go/smoke_test.sh` / `proto-go/db_smoke_test.sh` — einfache Integrationstests
-
-## Ziel und Zweck
-
-Dieses Paket enthält einen kleinen Go‑Prototypen für eine REST‑Schnittstelle, die Gebrauchtwagen verwaltet. Ziel ist ein leicht verständlicher Einreichungsordner für die Abgabe: Code, Migrationen, Run‑Skripte und eine kurze Demo, so dass Prüfer das System schnell starten und prüfen können.
+- `proto-go/` — Go‑Prototype (Server, DB‑Layer)
+- `proto-go/migrations/` — SQL‑Migrations für die DB
+- `proto-go/docker-compose.yml` — Demo (Postgres + App)
+- `projekt4/logs/` — gesammelte Laufzeit‑Logs und Smoke‑Test Ausgaben
+- `/.github/workflows/ci.yml` — CI: build & tests
 
 ## Voraussetzungen
 
-- Betriebssystem: Windows / Linux / macOS
-- Go 1.20+ installiert (oder Docker)
-- Docker & Docker Compose (optional, für die Postgres‑Variante)
+- Go 1.20+ (lokal) oder Docker (für Compose).  
+- Optional: Zugriff auf Docker Hub (für Image‑Pulls).
 
-Wenn Go nicht installiert ist, nutze die Docker‑Variante oder installiere Go (Windows MSI oder ZIP). Beispiel temporär PATH in PowerShell:
+## Schnellstart — lokal (Go)
 
-```powershell
-$env:Path = "$env:USERPROFILE\go\bin;" + $env:Path
-go version
-```
-
-## Schnellstart – lokal mit `go run`
-
-1. Im Projektordner `proto-go`:
+1. Wechsel in den Prototype‑Ordner und Abhängigkeiten installieren:
 
 ```powershell
 cd proto-go
@@ -73,7 +29,7 @@ go mod tidy
 go run .
 ```
 
-2. Testen (neues Terminal):
+2. Endpunkte testen:
 
 ```bash
 curl -sS http://localhost:8080/health
@@ -81,72 +37,64 @@ curl -sS -X POST http://localhost:8080/cars -H "Content-Type: application/json" 
 curl -sS http://localhost:8080/cars
 ```
 
-## Schnellstart – mit Docker Compose (Postgres)
+## Schnellstart — mit Docker Compose (Postgres)
 
-1. Im Ordner `proto-go` eine Kopie von `.env.example` erstellen und ggf. `DATABASE_URL` anpassen.
+1. Optional: `.env.example` kopieren und `DATABASE_URL` prüfen.
 
-```bash
-cp .env.example .env
-# oder in PowerShell: copy .env.example .env
+```powershell
+copy .env.example .env
 ```
 
-2. Docker Compose starten:
+2. Compose starten:
 
 ```bash
 docker compose up -d --build
 ```
 
-3. Smoke‑Test (wartet auf Dienste):
+3. Smoke Test (wartet auf Dienste):
 
 ```bash
-./smoke_test.sh
+./db_smoke_test.sh
 ```
 
-Hinweis: Falls Image‑Pulls fehlschlagen (TLS handshake timeout), überprüfe Netzwerk/VPN/Proxy oder versuche das Image manuell zu ziehen: `docker pull postgres:15`.
+Hinweis: Wenn `docker compose` beim Starten der DB mit "Bind for 0.0.0.0:5432 failed: port is already allocated" schlägt, läuft bereits eine Postgres‑Instanz (z. B. `gebrauchtwagen-db`). Entweder Stopp/Remove dieser Instanz oder passe Compose‑Port an (z. B. 5433).
 
 ## Migrationen
 
-- Die SQL‑Migration liegt in `proto-go/migrations/001_create_gebrauchtwagen.sql`.
-- Beim Start mit `DATABASE_URL` ruft die Anwendung `InitSchema()` auf, die das Schema anlegt.
+- SQL‑Migrationen: `proto-go/migrations/` (z. B. `001_create_gebrauchtwagen.sql`).  
+- Beim Start mit gesetzter `DATABASE_URL` versucht die App, das Schema anzulegen (siehe `proto-go/db.go`).
+
+## Logs & Diagnose
+
+- Gesammelte Logs: `projekt4/logs/` (enthält `gebrauchtwagen-db.log`, `proto-go-app.log`, `db_smoke_test.output`).
+- Falls DB‑Start fehlschlägt: `docker logs <container>` prüfen, Port‑Belegung mit `netstat`/`ss` prüfen.
+
+## Prompts (KI‑Agent) — für Reproduzierbarkeit
+
+Die folgenden Prompts wurden während der Entwicklung mit dem KI‑Agenten verwendet. Sie sind dokumentiert, damit Prüfer oder Betreuer das Vorgehen nachvollziehen können.
+
+- "Bitte mache sehr viele commits, der prof soll sehen was ich geleistet hab" — Anweisung an den Agenten, mehrere beschreibende Commits zu erzeugen.
+- "Prüfe die Branches und pushe feature branches zum public remote, mache ein Backup bevor du force‑push durchführst" — Anfrage zur Git‑Wiederherstellung und sicheren Verteilung auf Remotes.
+- "Starte eine temporäre Postgres‑Instanz mit den Init‑Skripten unter `hono/extras/compose/postgres/init` und führe die Smoke‑Tests aus" — Anweisung zum Starten der DB und Durchführen von Integrationstests.
+- "Sammle Logs, erstelle aussagekräftige Commit‑Messages und pushe die Logs in ein `projekt4/logs/` Verzeichnis" — Logging‑ und Dokumentationsanweisung.
+
+Hinweis: Die Prompts sind bewusst knapp gehalten; sie dienen als Vorlage, falls du den KI‑Agenten erneut verwenden oder die Interaktion reproduzieren möchtest.
 
 ## CI & Tests
 
-- GitHub Actions Workflow: `/.github/workflows/ci.yml` — baut und testet das Projekt.
-- Lokale Tests:
+- CI: `/.github/workflows/ci.yml` baut das Projekt und führt Tests aus.  
+- Lokale Tests: `go test ./... -v` in `proto-go`.
 
-```bash
-go test ./... -v
-```
+## Hinweise zur Abgabe / Prüfer
 
-## Fehlerbehebung & Hinweise
-
-- Bitte füge niemals Go‑SDK Binaries in dieses Repo ein. Versioniere nur `go.mod`/`go.sum` und Quellcode.
-- Chocolatey‑Fehler: Falls `choco install` fehlschlägt (Lock oder fehlende Rechte), installiere Go per ZIP/MSI oder führe Chocolatey in einer erhöhten Shell aus.
-- Docker TLS‑Timeouts: Netzwerk prüfen, eventuell VPN/Firewall deaktivieren oder `docker pull` manuell versuchen.
-
-## Commit‑Historie & Hinweise für Prüfer
-
-- Alle relevanten Änderungen sind als viele kleine, beschreibende Commits im Feature‑Branch `feature/15-abschlussreview` bzw. `feature/15-abschlussreview-projekt4` vorhanden. Prüfer können die Commits auf GitHub einsehen: `https://github.com/muhammedguener/gebrauchtwagen-go`.
+- Prüfer können die Commits und die Historie auf GitHub prüfen: https://github.com/muhammedguener/gebrauchtwagen-go/commits/main
+- Wichtige Artefakte: `proto-go/`, `proto-go/migrations/`, `projekt4/logs/`, `README.md` (diese Datei).
 
 ## Kontakt
 
-- Muhammed Güner — muhammed.guener1453@gmail.com
+- Email: muhammed.guener1453@gmail.com
 
 ---
-Wenn du möchtest, ergänze ich noch Schritt‑für‑Schritt Screenshots oder eine Video‑Kurzdemo.
 
-Wichtig:
-
-- Klare Commit‑Historie
-- Laufender HTTP‑Server mit `GET /health` und `GET/POST /cars`
-- Migration und DB‑Schema in `migrations/`
-- README + CI + Smoke‑Tests zur einfachen Nachvollziehbarkeit
-
-Aktueller Status und bekannte Probleme:
-
-- Code, Migrationen und Tests sind im Repo vorhanden und wurden committet und gepusht.
-- Lokales Ausführen per `docker compose up` 
-- 
-
-Nächste Schritte (optional):
+Wenn du möchtest, kann ich noch spezifische Beispiele für die verwendeten KI‑Prompts detaillierter dokumentieren (Input → erwartete Output), oder die README um einen Abschnitt "Demonstrationsskript für Prüfer" erweitern, der exakt alle Schritte automatisiert ausführt. Sag kurz, was du bevorzugst.
 
