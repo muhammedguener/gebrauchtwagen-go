@@ -1,42 +1,6 @@
+
 PostgreSQL Database directory appears to contain a database; Skipping initialization
 
-2026-04-27 16:15:54.608 UTC [1] LOG:  starting PostgreSQL 17.9 (Debian 17.9-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
-2026-04-27 16:15:54.612 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
-2026-04-27 16:15:54.612 UTC [1] LOG:  listening on IPv6 address "::", port 5432
-2026-04-27 16:15:54.636 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
-2026-04-27 16:15:54.663 UTC [29] LOG:  database system was shut down at 2026-04-27 16:15:52 UTC
-2026-04-27 16:15:54.691 UTC [1] LOG:  database system is ready to accept connections
 
-2026-04-27 16:22:59.013 UTC [387] ERROR:  relation "gebrauchtwagen.gebrauchtwagen" does not exist at character 409
-2026-04-27 16:22:59.013 UTC [387] STATEMENT:  SELECT "t0"."id", "t0"."version", "t0"."fin", "t0"."marke", "t0"."modell", "t0"."baujahr", "t0"."erstzulassung", "t0"."kilometerstand", "t0"."kraftstoffart"::text, "t0"."fahrzeugklasse"::text, "t0"."ausstattung", "t0"."schadenfrei", "t0"."beschreibung_url" AS "beschreibungUrl", "t0"."anbieter_username" AS "anbieterUsername", "t0"."kontakt_email" AS "kontaktEmail", "t0"."erzeugt", "t0"."aktualisiert" FROM "gebrauchtwagen"."gebrauchtwagen" AS "t0" WHERE ("t0"."id" = $1 AND 1=1) LIMIT $2 /*prismaQuery='Gebrauchtwagen.findUnique%3AeyJ3aGVyZSI6eyJpZCI6eyIkdHlwZSI6IlBhcmFtIn19fQ'*/
+PostgreSQL Database directory appears to contain a database; Skipping initialization
 
-2026-04-27 16:24:08.237 UTC [464] ERROR:  duplicate key value violates unique constraint "gebrauchtwagen_pkey"
-2026-04-27 16:24:08.237 UTC [464] DETAIL:  Key (id)=(1) already exists.
-2026-04-27 16:24:08.237 UTC [464] STATEMENT:  INSERT INTO "gebrauchtwagen"."gebrauchtwagen" ("version","fin","marke","modell","baujahr","erstzulassung","kilometerstand","kraftstoffart","fahrzeugklasse","ausstattung","schadenfrei","anbieter_username","kontakt_email","erzeugt","aktualisiert") VALUES ($1,$2,$3,$4,$5,$6,$7,CAST($8::text AS "gebrauchtwagen"."kraftstoffart"),CAST($9::text AS "gebrauchtwagen"."fahrzeugklasse"),$10,$11,$12,$13,$14,$15) RETURNING "gebrauchtwagen"."gebrauchtwagen"."id"
-
-2026-06-19 14:43:07.782 UTC [1] LOG:  starting PostgreSQL 17.9 (Debian 17.9-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
-2026-06-19 14:43:07.784 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
-2026-06-19 14:43:07.784 UTC [1] LOG:  listening on IPv6 address "::", port 5432
-2026-06-19 14:43:07.799 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
-2026-06-19 14:43:07.816 UTC [29] LOG:  database system was interrupted; last known up at 2026-05-08 16:28:57 UTC
-2026-06-19 14:43:08.513 UTC [29] LOG:  redo starts at 0/1C5A9F8
-2026-06-19 14:43:08.514 UTC [29] LOG:  invalid record length at 0/1C5AB00: expected at least 24, got 0
-2026-06-19 14:43:08.514 UTC [29] LOG:  redo done at 0/1C5AAC8 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
-2026-06-19 14:43:08.525 UTC [27] LOG:  checkpoint starting: end-of-recovery immediate wait
-2026-06-19 14:43:08.568 UTC [27] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.009 s, sync=0.004 s, total=0.048 s; sync files=2, longest=0.002 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/1C5AB00, redo lsn=0/1C5AB00
-2026-06-19 14:43:08.593 UTC [1] LOG:  database system is ready to accept connections
-
-== DB tables ==
-                      List of relations
-     Schema     |       Name        | Type  |     Owner      
-----------------+-------------------+-------+----------------
- gebrauchtwagen | gebrauchtwagen    | table | gebrauchtwagen
- gebrauchtwagen | hauptuntersuchung | table | gebrauchtwagen
- gebrauchtwagen | schaden           | table | gebrauchtwagen
- gebrauchtwagen | standort          | table | gebrauchtwagen
-(4 rows)
-
-== sample rows error ==
-ERROR:  column "fahrzeugnummer" does not exist
-LINE 1: SELECT id, fahrzeugnummer, marke, modell, baujahr FROM gebra...
-                   ^
