@@ -1,0 +1,4 @@
+=== RUN   TestCreateAndListCars
+--- PASS: TestCreateAndListCars (0.52s)
+PASS
+ok  	proto-go	(cached)
