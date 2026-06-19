@@ -14,6 +14,11 @@ Kurz: kleiner Go‑Prototyp mit REST‑Endpunkten zum Verwalten von Gebrauchtwag
 - `projekt4/logs/` — gesammelte Laufzeit‑Logs und Smoke‑Test Ausgaben
 - `/.github/workflows/ci.yml` — CI: build & tests
 
+Weitere relevante Dateien:
+- `projekt4/demo.sh` — Demo‑Wrapper (versucht Docker Compose, sammelt Logs)
+- `projekt4/test-results/test_output.txt` — gespeicherte `go test` Ausgabe
+- `projekt4/prompts/` — Dokumentation der verwendeten KI‑Prompts
+
 ## Voraussetzungen
 
 - Go 1.20+ (lokal) oder Docker (für Compose).  
@@ -59,15 +64,21 @@ docker compose up -d --build
 
 Hinweis: Wenn `docker compose` beim Starten der DB mit "Bind for 0.0.0.0:5432 failed: port is already allocated" schlägt, läuft bereits eine Postgres‑Instanz (z. B. `gebrauchtwagen-db`). Entweder Stopp/Remove dieser Instanz oder passe Compose‑Port an (z. B. 5433).
 
+Wenn Docker-Probleme auftreten: Siehe Abschnitt "Troubleshooting" weiter unten.
+
 ## Migrationen
 
 - SQL‑Migrationen: `proto-go/migrations/` (z. B. `001_create_gebrauchtwagen.sql`).  
 - Beim Start mit gesetzter `DATABASE_URL` versucht die App, das Schema anzulegen (siehe `proto-go/db.go`).
 
+Tipp: Die SQL‑Skripte sind idempotent gestaltet (mehrmaliges Ausführen bricht nicht mit Fehlern), trotzdem empfiehlt es sich, vor einem Testlauf die Datenbank zu leeren.
+
 ## Logs & Diagnose
 
 - Gesammelte Logs: `projekt4/logs/` (enthält `gebrauchtwagen-db.log`, `proto-go-app.log`, `db_smoke_test.output`).
 - Falls DB‑Start fehlschlägt: `docker logs <container>` prüfen, Port‑Belegung mit `netstat`/`ss` prüfen.
+
+Ich habe die wichtigsten Laufzeitprotokolle im Repo abgelegt damit der Prüfer schnell Probleme nachvollziehen kann.
 
 ## Demo‑Skript (für Prüfer)
 
@@ -95,7 +106,6 @@ Wichtig — Port‑Konflikte:
 ## Prompts (KI‑Agent) — für Reproduzierbarkeit
 Siehe ausführliche Vorlagen in `projekt4/prompts/ki_prompts.md` (enthält parametrisierbare Prompts mit Beispielen).
 
-Die folgenden Prompts wurden während der Entwicklung mit dem KI‑Agenten verwendet. Sie sind dokumentiert, damit Prüfer oder Betreuer das Vorgehen nachvollziehen können.
 
 - "Prüfe die Branches und pushe feature branches zum public remote, mache ein Backup bevor du force‑push durchführst" — Anfrage zur Git‑Wiederherstellung und sicheren Verteilung auf Remotes.
 - Erstelle eine REST-API in Go mit dem Gin-Framework.
@@ -145,12 +155,27 @@ Die folgenden Prompts wurden während der Entwicklung mit dem KI‑Agenten verwe
 - CI: `/.github/workflows/ci.yml` baut das Projekt und führt Tests aus.  
 - Lokale Tests: `go test ./... -v` in `proto-go`.
 
+Hinweis zu den Tests:
+- `projekt4/proto-go` enthält einen Integrationstest `integration_test.go` (POST + GET `/cars`).
+- Die Datei `projekt4/test-results/test_output.txt` enthält das zuletzt gespeicherte Test‑Output.
+
 ## Hinweise zur Abgabe / Prüfer
 
 - Prüfer können die Commits und die Historie auf GitHub prüfen: https://github.com/muhammedguener/gebrauchtwagen-go/commits/main
 - Wichtige Artefakte: `proto-go/`, `proto-go/migrations/`, `projekt4/logs/`, `README.md` (diese Datei).
 
+Empfohlener Ablauf für den Prüfer (kurz):
+1. Repo klonen
+2. `projekt4/ReadMe.md` lesen
+3. Option A: `bash projekt4/demo.sh` (Docker Compose) ausführen
+4. Option B: im Ordner `projekt4/proto-go` `go run .` ausführen und `go test -v ./...`
+
+Wenn gewünscht sende ich Ihnen die ReadMe als Datei und die Logs als ZIP‑Anhang per E‑Mail.
+
 ## Kontakt
 
 ---
+
+-- Ende --
+
 
