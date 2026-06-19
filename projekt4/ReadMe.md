@@ -70,15 +70,52 @@ Hinweis: Wenn `docker compose` beim Starten der DB mit "Bind for 0.0.0.0:5432 fa
 - Falls DB‑Start fehlschlägt: `docker logs <container>` prüfen, Port‑Belegung mit `netstat`/`ss` prüfen.
 
 ## Prompts (KI‑Agent) — für Reproduzierbarkeit
+Siehe ausführliche Vorlagen in `projekt4/prompts/ki_prompts.md` (enthält parametrisierbare Prompts mit Beispielen).
 
 Die folgenden Prompts wurden während der Entwicklung mit dem KI‑Agenten verwendet. Sie sind dokumentiert, damit Prüfer oder Betreuer das Vorgehen nachvollziehen können.
 
-- "Bitte mache sehr viele commits, der prof soll sehen was ich geleistet hab" — Anweisung an den Agenten, mehrere beschreibende Commits zu erzeugen.
 - "Prüfe die Branches und pushe feature branches zum public remote, mache ein Backup bevor du force‑push durchführst" — Anfrage zur Git‑Wiederherstellung und sicheren Verteilung auf Remotes.
-- "Starte eine temporäre Postgres‑Instanz mit den Init‑Skripten unter `hono/extras/compose/postgres/init` und führe die Smoke‑Tests aus" — Anweisung zum Starten der DB und Durchführen von Integrationstests.
-- "Sammle Logs, erstelle aussagekräftige Commit‑Messages und pushe die Logs in ein `projekt4/logs/` Verzeichnis" — Logging‑ und Dokumentationsanweisung.
+- Erstelle eine REST-API in Go mit dem Gin-Framework.
 
-Hinweis: Die Prompts sind bewusst knapp gehalten; sie dienen als Vorlage, falls du den KI‑Agenten erneut verwenden oder die Interaktion reproduzieren möchtest.
+- Zeige mir, wie ich eine PostgreSQL-Datenbank mit GORM in Go verbinde.
+
+- Erstelle ein GORM-Modell für eine Entität "Student".
+
+- Wie implementiere ich einen GET-Endpunkt zum Abrufen aller Datensätze?
+
+- Wie implementiere ich einen POST-Endpunkt zum Anlegen eines neuen Datensatzes?
+
+- Füge eine Validierung hinzu, sodass Pflichtfelder nicht leer sein dürfen.
+
+- Wie kann ich Request-Daten in Gin validieren?
+
+- Zeige mir ein Beispiel für Fehlerbehandlung bei ungültigen Eingaben.
+
+- Erstelle eine Projektstruktur für eine kleine Go-REST-Anwendung.
+
+- Wie führe ich automatische Datenbankmigrationen mit GORM durch?
+
+- Schreibe einen einfachen Integrationstest für einen POST-Endpunkt in Go.
+
+- Schreibe einen Integrationstest für einen GET-Endpunkt mit httptest.
+
+- Wie teste ich REST-Endpunkte in Go mit dem Standardpaket testing?
+
+- Erstelle eine Docker-Compose-Datei für PostgreSQL.
+
+- Wie kann ich Umgebungsvariablen für Datenbankzugangsdaten verwenden?
+
+- Erkläre die Unterschiede zwischen Unit-Tests und Integrationstests.
+
+- Zeige mir Best Practices für REST-APIs in Go.
+
+- Wie dokumentiere ich eine REST-API in einer README-Datei?
+
+- Wie integriere ich Keycloak per OpenID Connect in eine Go-Anwendung?
+
+- Zeige mir ein minimales Beispiel für JWT-Authentifizierung in Go.
+
+- Überprüfe meinen Go-Code auf mögliche Fehler und Verbesserungen.
 
 ## CI & Tests
 
@@ -92,9 +129,5 @@ Hinweis: Die Prompts sind bewusst knapp gehalten; sie dienen als Vorlage, falls 
 
 ## Kontakt
 
-- Email: muhammed.guener1453@gmail.com
-
 ---
-
-Wenn du möchtest, kann ich noch spezifische Beispiele für die verwendeten KI‑Prompts detaillierter dokumentieren (Input → erwartete Output), oder die README um einen Abschnitt "Demonstrationsskript für Prüfer" erweitern, der exakt alle Schritte automatisiert ausführt. Sag kurz, was du bevorzugst.
 
