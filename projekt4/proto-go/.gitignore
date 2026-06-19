@@ -1,0 +1,15 @@
+# Binaries for programs and plugins
+/bin/
+
+# Vendor
+/vendor/
+
+# Editor files
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Env files
+.env
