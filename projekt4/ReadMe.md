@@ -69,6 +69,29 @@ Hinweis: Wenn `docker compose` beim Starten der DB mit "Bind for 0.0.0.0:5432 fa
 - Gesammelte Logs: `projekt4/logs/` (enthält `gebrauchtwagen-db.log`, `proto-go-app.log`, `db_smoke_test.output`).
 - Falls DB‑Start fehlschlägt: `docker logs <container>` prüfen, Port‑Belegung mit `netstat`/`ss` prüfen.
 
+## Demo‑Skript (für Prüfer)
+
+Es gibt ein kurzes Automatisierungs‑Skript `projekt4/demo.sh`, das versucht:
+
+- `docker compose up -d --build` im `hono/proto-go` Ordner zu starten,
+- das Smoke‑Testskript `db_smoke_test.sh` auszuführen und
+- die relevanten Logs nach `projekt4/logs/` zu kopieren.
+
+Benutzung (Copy‑Paste):
+
+```bash
+bash projekt4/demo.sh
+```
+
+Wichtig — Port‑Konflikte:
+
+- Auf manchen Systemen laufen bereits Dienste auf den benötigten Ports (Standard: Postgres 5432, App 8080). In diesem Fall schlägt `docker compose up` fehl mit Meldungen wie "Bind for 0.0.0.0:5432 failed" oder "exposing port TCP 0.0.0.0:8080 ... ports are not available".
+- Lösungen:
+	- Stoppe oder entferne die laufenden Container, die die Ports blockieren (`docker ps` → `docker stop <name>` / `docker rm <name>`).
+	- Oder passe die Ports in `hono/proto-go/docker-compose.yml` temporär an (z. B. `5433:5432` für Postgres).
+	- Alternativ: Starte die App lokal per `go run` und führe nur das `db_smoke_test.sh`‑Skript gegen die laufende Instanz aus.
+
+
 ## Prompts (KI‑Agent) — für Reproduzierbarkeit
 Siehe ausführliche Vorlagen in `projekt4/prompts/ki_prompts.md` (enthält parametrisierbare Prompts mit Beispielen).
 
