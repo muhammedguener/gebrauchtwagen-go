@@ -1,18 +1,11 @@
-# Prototype Go Projekt (Projekt4)
+# Prototype Go Projekt (kurz)
 
-Dieses Verzeichnis enthält den Prototyp für die Aufgabe "Prototypische Implementierung" — kopiert aus dem `hono` Workspace.
+Siehe die konsolidierte Projekt‑README: [projekt4/ReadMe.md](../ReadMe.md)
 
-## Schnellstart
+Kurz: Dieses Verzeichnis enthält den Go‑Prototyp (`main.go`, DB‑Layer, Migrations). Für vollständige Start‑ und Demo‑Anweisungen nutze bitte die zentrale `projekt4/ReadMe.md`.
 
+Kurzbefehl (zum schnellen Testen):
 ```bash
 cd projekt4/proto-go
-# Mit lokal installiertem Go
-go run main.go
-
-# Oder mit Docker (falls kein Go installiert):
-# docker run --rm -it -v ${PWD}:/app -w /app golang:1.20 go run main.go
+go run .
 ```
-
-## Abgabe
-
-Fülle die `ReadMe.md` (oberhalb) mit euren Namen und dem Repository-Link und sende sie per E‑Mail an den Dozenten.
