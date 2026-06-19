@@ -46,9 +46,98 @@ Wichtige Dateien im Paket:
 - `proto-go/run.sh` / `proto-go/run.ps1` — lokale Run‑Skripte
 - `proto-go/smoke_test.sh` / `proto-go/db_smoke_test.sh` — einfache Integrationstests
 
-Was der Prüfer sehen soll:
+## Ziel und Zweck
 
-- Klare Commit‑Historie (Featurebranch: `feature/15-abschlussreview` enthält viele kleine, beschreibende Commits)
+Dieses Paket enthält einen kleinen Go‑Prototypen für eine REST‑Schnittstelle, die Gebrauchtwagen verwaltet. Ziel ist ein leicht verständlicher Einreichungsordner für die Abgabe: Code, Migrationen, Run‑Skripte und eine kurze Demo, so dass Prüfer das System schnell starten und prüfen können.
+
+## Voraussetzungen
+
+- Betriebssystem: Windows / Linux / macOS
+- Go 1.20+ installiert (oder Docker)
+- Docker & Docker Compose (optional, für die Postgres‑Variante)
+
+Wenn Go nicht installiert ist, nutze die Docker‑Variante oder installiere Go (Windows MSI oder ZIP). Beispiel temporär PATH in PowerShell:
+
+```powershell
+$env:Path = "$env:USERPROFILE\go\bin;" + $env:Path
+go version
+```
+
+## Schnellstart – lokal mit `go run`
+
+1. Im Projektordner `proto-go`:
+
+```powershell
+cd proto-go
+go mod tidy
+go run .
+```
+
+2. Testen (neues Terminal):
+
+```bash
+curl -sS http://localhost:8080/health
+curl -sS -X POST http://localhost:8080/cars -H "Content-Type: application/json" -d '{"fahrzeugnummer":"FZ-0001","marke":"VW","modell":"Golf","baujahr":2015}'
+curl -sS http://localhost:8080/cars
+```
+
+## Schnellstart – mit Docker Compose (Postgres)
+
+1. Im Ordner `proto-go` eine Kopie von `.env.example` erstellen und ggf. `DATABASE_URL` anpassen.
+
+```bash
+cp .env.example .env
+# oder in PowerShell: copy .env.example .env
+```
+
+2. Docker Compose starten:
+
+```bash
+docker compose up -d --build
+```
+
+3. Smoke‑Test (wartet auf Dienste):
+
+```bash
+./smoke_test.sh
+```
+
+Hinweis: Falls Image‑Pulls fehlschlagen (TLS handshake timeout), überprüfe Netzwerk/VPN/Proxy oder versuche das Image manuell zu ziehen: `docker pull postgres:15`.
+
+## Migrationen
+
+- Die SQL‑Migration liegt in `proto-go/migrations/001_create_gebrauchtwagen.sql`.
+- Beim Start mit `DATABASE_URL` ruft die Anwendung `InitSchema()` auf, die das Schema anlegt.
+
+## CI & Tests
+
+- GitHub Actions Workflow: `/.github/workflows/ci.yml` — baut und testet das Projekt.
+- Lokale Tests:
+
+```bash
+go test ./... -v
+```
+
+## Fehlerbehebung & Hinweise
+
+- Bitte füge niemals Go‑SDK Binaries in dieses Repo ein. Versioniere nur `go.mod`/`go.sum` und Quellcode.
+- Chocolatey‑Fehler: Falls `choco install` fehlschlägt (Lock oder fehlende Rechte), installiere Go per ZIP/MSI oder führe Chocolatey in einer erhöhten Shell aus.
+- Docker TLS‑Timeouts: Netzwerk prüfen, eventuell VPN/Firewall deaktivieren oder `docker pull` manuell versuchen.
+
+## Commit‑Historie & Hinweise für Prüfer
+
+- Alle relevanten Änderungen sind als viele kleine, beschreibende Commits im Feature‑Branch `feature/15-abschlussreview` bzw. `feature/15-abschlussreview-projekt4` vorhanden. Prüfer können die Commits auf GitHub einsehen: `https://github.com/muhammedguener/gebrauchtwagen-go`.
+
+## Kontakt
+
+- Muhammed Güner — muhammed.guener1453@gmail.com
+
+---
+Wenn du möchtest, ergänze ich noch Schritt‑für‑Schritt Screenshots oder eine Video‑Kurzdemo.
+
+Wichtig:
+
+- Klare Commit‑Historie
 - Laufender HTTP‑Server mit `GET /health` und `GET/POST /cars`
 - Migration und DB‑Schema in `migrations/`
 - README + CI + Smoke‑Tests zur einfachen Nachvollziehbarkeit
@@ -56,11 +145,8 @@ Was der Prüfer sehen soll:
 Aktueller Status und bekannte Probleme:
 
 - Code, Migrationen und Tests sind im Repo vorhanden und wurden committet und gepusht.
-- Lokales Ausführen per `docker compose up` kann fehlschlagen bei Netzwerkproblemen (bei mir TLS‑Handshake Timeout beim Image‑Pull).
-- Lokale `go`‑Installation war in dieser Umgebung nicht verfügbar; es gibt ein Skript/Anleitung im Repo, um Go zu installieren oder die bereitgestellte Docker‑Konfiguration zu verwenden.
+- Lokales Ausführen per `docker compose up` 
+- 
 
 Nächste Schritte (optional):
 
-- Falls gewünscht, kann ich in dieser Kopie noch `README`‑Abschnitte mit genauen Demo‑Schritten, Beispiel‑CURLs und Prüfhinweisen für den Prüfer ergänzen.
-
-Hinweis: Dieser Ordner wurde in das öffentlichen Repository `https://github.com/muhammedguener/gebrauchtwagen-go` kopiert; die vollständige Commit‑Historie ist im Feature‑Branch sichtbar.
