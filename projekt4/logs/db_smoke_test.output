@@ -1,0 +1,12 @@
+WARNING: docker-compose attribute `version` is obsolete and ignored
+docker compose: Bind for 0.0.0.0:5432 failed: port is already allocated
+
+Fallback / alternative used during testing:
+- Existing container `gebrauchtwagen-db` was used on port 5432.
+- App was started locally against that DB via `go run` with `DATABASE_URL=postgres://gebrauchtwagen:gebrauchtwagen@localhost:5432/gebrauchtwagen?sslmode=disable`.
+
+Local smoke run (excerpt):
+POST /cars -> {"id":4,"fahrzeugnummer":"VIN-LOCAL-1","marke":"Opel","modell":"Corsa","baujahr":2010}
+GET /cars -> returned list with seeded rows and the created row (see proto-go-app.log)
+
+Conclusion: Compose failed to start a second DB due to port collision; integration tests passed against the existing `gebrauchtwagen-db` container.
