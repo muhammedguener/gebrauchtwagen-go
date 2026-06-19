@@ -7,7 +7,7 @@ Muhammed Güner
 86352
 
 ## Link zum Git-Repository
-PLACEHOLDER_REPO_URL
+https://github.com/muhammedguener/gebrauchtwagen-go
 
 ## Kontakt für Abgabe
 Email: muhammed.guener1453@gmail.com
@@ -32,4 +32,4 @@ Email: muhammed.guener1453@gmail.com
 
 ## Prompts/Requests an KI-Agent/en
 
-**Hinweis:** Der `Repo-Link` ist die Web‑URL zu eurem Git‑Repository (z.B. https://github.com/organisation/repo). Wenn du mir den Link jetzt gibst, trage ich ihn ein; sonst lasse ich den Platzhalter stehen.
+**Hinweis:** Dieser Ordner wurde in das Repository `gebrauchtwagen-go` kopiert. Vollständige Commit-Historie und Branch `feature/15-abschlussreview` sind verfügbar im Repo.
