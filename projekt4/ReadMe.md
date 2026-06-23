@@ -18,6 +18,9 @@ Weitere relevante Dateien:
 - `projekt4/demo.sh` — Demo‑Wrapper (versucht Docker Compose, sammelt Logs)
 - `projekt4/test-results/test_output.txt` — gespeicherte `go test` Ausgabe
 - `projekt4/prompts/` — Dokumentation der verwendeten KI‑Prompts
+- `projekt4/ReadMe.md` — Haupt‑ReadMe mit Demo‑Schritten und Hintergrund.
+- `projekt4/test-results/test_output.txt` — gespeicherte Testausgabe.
+- `projekt4/logs/` — gesammelte Laufzeit‑Logs.
 
 ## Voraussetzungen
 
@@ -170,7 +173,18 @@ Empfohlener Ablauf für den Prüfer (kurz):
 3. Option A: `bash projekt4/demo.sh` (Docker Compose) ausführen
 4. Option B: im Ordner `projekt4/proto-go` `go run .` ausführen und `go test -v ./...`
 
-Wenn gewünscht sende ich Ihnen die ReadMe als Datei und die Logs als ZIP‑Anhang per E‑Mail.
+
+Enthält die gesammelten Laufzeit‑Logs.
+
+Die vollständigen Erklärungen und Anleitungen stehen in der konsolidierten Projekt‑README: [projekt4/ReadMe.md](../ReadMe.md).
+
+Kurzübersicht der Dateien in diesem Ordner:
+- `gebrauchtwagen-db.log` — Docker/Postgres‑Container‑Logs (Start, Recovery, Init‑Skript Meldungen)
+- `proto-go-app.log` — Auszüge der API‑Antworten (Health, POST/GET `/cars`) aus den Smoke‑Tests
+- `db_smoke_test.output` — Kurzprotokoll des Smoke‑Test‑Runs (inkl. Compose‑Fehler oder lokaler Fallbacks)
+
+Bei Problemen: siehe `projekt4/ReadMe.md` für Troubleshooting‑Schritte (Port‑Konflikte, Compose‑Start, lokale `go run`‑Fallbacks).
+
 
 ## Kontakt
 
